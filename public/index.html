@@ -1,0 +1,3870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vibe-usage</title>
+  <style>
+    @layer reset, tokens, base, layout, components, utilities;
+
+    @layer reset {
+      html, body, div, span, header, main, section, article, aside, footer, nav, search,
+      h1, h2, h3, h4, p, ul, ol, li, dl, dt, dd, figure, figcaption, pre, code,
+      table, caption, thead, tbody, tr, th, td,
+      form, fieldset, legend, label, input, select, button, dialog, details, summary {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      ul, ol { list-style: none; }
+      button, input, select { font: inherit; color: inherit; }
+      button { cursor: pointer; background: transparent; border: 0; }
+    }
+
+    @layer tokens {
+      :root {
+        color-scheme: dark;
+        --bg-canvas: #08090d;
+        --bg-elev-1: #0d0f15;
+        --bg-elev-2: #12151e;
+        --bg-elev-3: #181c28;
+        --bg-hover: #1e2332;
+        --bg-glass: rgb(13 15 21 / 0.84);
+
+        --border-subtle: rgb(255 255 255 / 0.065);
+        --border-default: rgb(255 255 255 / 0.11);
+        --border-strong: rgb(255 255 255 / 0.18);
+        --inner-glow: inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+
+        --text-primary: #f3f5f9;
+        --text-secondary: #9ba3b5;
+        --text-muted: #646d82;
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+        --accent-indigo: #6e7bf2;
+        --accent-indigo-soft: rgb(110 123 242 / 0.14);
+        --accent-cyan: #22d3ee;
+        --accent-cyan-soft: rgb(34 211 238 / 0.13);
+        --accent-emerald: #10b981;
+        --accent-emerald-soft: rgb(16 185 129 / 0.14);
+        --accent-amber: #f59e0b;
+        --accent-amber-soft: rgb(245 158 11 / 0.15);
+        --accent-crimson: #f43f5e;
+        --accent-crimson-soft: rgb(244 63 94 / 0.15);
+
+        --radius-xs: 6px;
+        --radius-sm: 8px;
+        --radius-md: 11px;
+        --radius-lg: 14px;
+        --radius-pill: 999px;
+        --shadow-card: 0 4px 20px -4px rgb(0 0 0 / 0.55), var(--inner-glow);
+        --shadow-modal: 0 28px 80px -12px rgb(0 0 0 / 0.82), 0 0 0 1px var(--border-default), var(--inner-glow);
+      }
+    }
+
+    @layer base {
+      html {
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        scrollbar-width: thin;
+        scrollbar-color: #3b4459 var(--bg-elev-1);
+      }
+
+      body {
+        min-block-size: 100dvh;
+        background:
+          radial-gradient(900px 380px at 18% -6%, rgb(110 123 242 / 0.09), transparent 65%),
+          radial-gradient(760px 320px at 85% -4%, rgb(34 211 238 / 0.06), transparent 60%),
+          var(--bg-canvas);
+      }
+
+      ::selection {
+        background: rgb(110 123 242 / 0.35);
+        color: #fff;
+      }
+
+      code, pre, .mono {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tabular {
+        font-variant-numeric: tabular-nums;
+      }
+
+      :is(button, select, input, summary, a, [tabindex="0"]):focus-visible {
+        outline: 2px solid var(--accent-indigo);
+        outline-offset: 2px;
+      }
+
+      input:not(input[type="range"]):user-invalid {
+        border-color: var(--accent-crimson);
+      }
+    }
+
+    @layer layout {
+      .app-shell {
+        max-inline-size: 1420px;
+        margin-inline: auto;
+        padding-inline: clamp(1rem, 2.5vw, 2rem);
+        padding-block-end: 3.5rem;
+      }
+
+      .topbar {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 30;
+        backdrop-filter: blur(16px);
+        background: var(--bg-glass);
+        border-block-end: 1px solid var(--border-subtle);
+        margin-block-end: 1.25rem;
+      }
+
+      .topbar-inner {
+        max-inline-size: 1420px;
+        margin-inline: auto;
+        padding-inline: clamp(1rem, 2.5vw, 2rem);
+        padding-block: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-block-end: 1rem;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 0.85rem;
+        margin-block-end: 1.25rem;
+      }
+    }
+
+    @layer components {
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .brand-mark {
+        inline-size: 30px;
+        block-size: 30px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-default);
+        display: grid;
+        place-items: center;
+        color: var(--accent-cyan);
+      }
+
+      .brand-title {
+        font-size: 0.96rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .brand-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .pill-group {
+        display: inline-flex;
+        align-items: center;
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        padding: 2px;
+        gap: 2px;
+      }
+
+      .pill-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.76rem;
+        font-weight: 550;
+        color: var(--text-secondary);
+        border-radius: 6px;
+        transition: background-color 0.15s ease, color 0.15s ease;
+
+        &:hover:not(:disabled) {
+          color: var(--text-primary);
+          background: rgb(255 255 255 / 0.04);
+        }
+
+        &[aria-pressed="true"] {
+          background: var(--bg-elev-3);
+          color: var(--text-primary);
+          box-shadow: 0 1px 2px rgb(0 0 0 / 0.4), inset 0 0 0 1px var(--border-default);
+        }
+      }
+
+      .input-control, .select-control {
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-sm);
+        padding: 0.36rem 0.65rem;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        min-block-size: 32px;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+          border-color: var(--border-strong);
+        }
+      }
+
+      .search-box {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .search-box input {
+        padding-inline-start: 1.85rem;
+        padding-inline-end: 1.7rem;
+        inline-size: 205px;
+      }
+
+      .search-icon {
+        position: absolute;
+        inset-inline-start: 0.55rem;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .kbd-hint {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.08rem 0.36rem;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        line-height: 1.3;
+      }
+
+      .search-box .kbd-hint {
+        position: absolute;
+        inset-inline-end: 0.42rem;
+        pointer-events: none;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        padding: 0.38rem 0.72rem;
+        min-block-size: 32px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 560;
+        border: 1px solid var(--border-default);
+        background: var(--bg-elev-2);
+        color: var(--text-primary);
+        box-shadow: var(--inner-glow);
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+
+        &:hover:not(:disabled) {
+          background: var(--bg-hover);
+          border-color: var(--border-strong);
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(1px);
+        }
+      }
+
+      .btn-primary {
+        background: linear-gradient(180deg, #5d6af0, #4b56d2);
+        border-color: rgb(138 149 255 / 0.45);
+        color: #fff;
+        box-shadow: 0 2px 12px rgb(93 106 240 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.18);
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(180deg, #6976f8, #5561df);
+          border-color: rgb(165 174 255 / 0.6);
+        }
+      }
+
+      .btn-ghost {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        color: var(--text-secondary);
+
+        &:hover:not(:disabled) {
+          background: rgb(255 255 255 / 0.05);
+          color: var(--text-primary);
+          border-color: transparent;
+        }
+      }
+
+      .card {
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+      }
+
+      .quota-banner {
+        display: grid;
+        grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.95fr);
+        gap: 1.25rem;
+        padding: 1.15rem 1.35rem;
+        position: relative;
+        overflow: hidden;
+        border-color: var(--border-default);
+        background:
+          linear-gradient(135deg, rgb(110 123 242 / 0.05), transparent 45%),
+          var(--bg-elev-1);
+      }
+
+      @media (max-width: 900px) {
+        .quota-banner {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .quota-banner[data-urgent="true"] {
+        border-color: rgb(245 158 11 / 0.45);
+        background:
+          radial-gradient(600px 220px at 15% 0%, rgb(244 63 94 / 0.13), transparent 70%),
+          linear-gradient(135deg, rgb(245 158 11 / 0.08), transparent 55%),
+          var(--bg-elev-1);
+      }
+
+      .quota-left {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.8rem;
+      }
+
+      .quota-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.24rem 0.62rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.72rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .status-pill.active {
+        background: var(--accent-cyan-soft);
+        color: var(--accent-cyan);
+        border: 1px solid rgb(34 211 238 / 0.3);
+      }
+
+      .status-pill.idle {
+        background: rgb(255 255 255 / 0.05);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-subtle);
+      }
+
+      .use-it-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.48rem;
+        padding: 0.28rem 0.72rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(90deg, #e11d48, #d97706);
+        border: 1px solid rgb(251 191 36 / 0.6);
+        box-shadow: 0 0 20px rgb(244 63 94 / 0.4);
+        animation: urgentPulse 1.8s ease-in-out infinite;
+      }
+
+      .pulse-dot {
+        inline-size: 8px;
+        block-size: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        position: relative;
+      }
+
+      .pulse-dot::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1.5px solid currentColor;
+        animation: beaconRing 1.8s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+      }
+
+      @keyframes urgentPulse {
+        0%, 100% { box-shadow: 0 0 12px rgb(244 63 94 / 0.35); transform: scale(1); }
+        50% { box-shadow: 0 0 24px rgb(245 158 11 / 0.6); transform: scale(1.015); }
+      }
+
+      @keyframes beaconRing {
+        0% { transform: scale(0.7); opacity: 0.9; }
+        100% { transform: scale(2.1); opacity: 0; }
+      }
+
+      .quota-clock-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .quota-countdown {
+        font-family: var(--font-mono);
+        font-size: 1.55rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+      }
+
+      .quota-window-meta {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+      }
+
+      .quota-progress-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 0.38rem;
+      }
+
+      .quota-track {
+        position: relative;
+        block-size: 14px;
+        background: var(--bg-elev-3);
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--border-subtle);
+        overflow: hidden;
+      }
+
+      .quota-fill {
+        block-size: 100%;
+        inline-size: calc(var(--progress-pct, 0) * 1%);
+        border-radius: var(--radius-pill);
+        background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+        box-shadow: 0 0 14px rgb(34 211 238 / 0.35);
+        transition: inline-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .quota-banner[data-urgent="true"] .quota-fill {
+        background: linear-gradient(90deg, var(--accent-amber), var(--accent-crimson));
+        box-shadow: 0 0 16px rgb(244 63 94 / 0.5);
+      }
+
+      .quota-threshold-marker {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 80%;
+        inline-size: 2px;
+        background: rgb(245 158 11 / 0.65);
+        z-index: 2;
+      }
+
+      .quota-ticks {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 0.69rem;
+        color: var(--text-muted);
+      }
+
+      .quota-ticks .urgent-tick {
+        color: var(--accent-amber);
+        font-weight: 600;
+      }
+
+      .quota-advice {
+        font-size: 0.81rem;
+        color: var(--text-secondary);
+        padding: 0.5rem 0.7rem;
+        border-radius: var(--radius-sm);
+        background: rgb(255 255 255 / 0.03);
+        border: 1px solid var(--border-subtle);
+      }
+
+      .quota-banner[data-urgent="true"] .quota-advice {
+        color: #fde68a;
+        background: rgb(245 158 11 / 0.1);
+        border-color: rgb(245 158 11 / 0.3);
+      }
+
+      .token-mix-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+
+      .mix-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.18rem 0.52rem;
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xs);
+        font-family: var(--font-mono);
+      }
+
+      .dot {
+        inline-size: 7px;
+        block-size: 7px;
+        border-radius: 50%;
+      }
+
+      .burn-gauge-card {
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.45rem;
+      }
+
+      .gauge-svg-wrap {
+        position: relative;
+        inline-size: 210px;
+        block-size: 112px;
+        display: grid;
+        place-items: end center;
+      }
+
+      .gauge-center-readout {
+        position: absolute;
+        inset-block-end: 4px;
+        text-align: center;
+      }
+
+      .gauge-rate-val {
+        font-family: var(--font-mono);
+        font-size: 1.22rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.15;
+      }
+
+      .gauge-rate-lbl {
+        font-size: 0.69rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .gauge-stats-row {
+        inline-size: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding-block-start: 0.5rem;
+        border-block-start: 1px solid var(--border-subtle);
+        text-align: center;
+      }
+
+      .gauge-stat-val {
+        font-family: var(--font-mono);
+        font-size: 0.84rem;
+        font-weight: 650;
+        color: var(--text-primary);
+      }
+
+      .gauge-stat-lbl {
+        font-size: 0.67rem;
+        color: var(--text-muted);
+      }
+
+      .kpi-card {
+        padding: 0.95rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .kpi-label {
+        font-size: 0.75rem;
+        font-weight: 550;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .kpi-value {
+        font-family: var(--font-mono);
+        font-size: 1.48rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .kpi-sub {
+        font-size: 0.74rem;
+        color: var(--text-muted);
+      }
+
+      .apps-strip {
+        display: flex;
+        gap: 0.55rem;
+        overflow-x: auto;
+        padding-block-end: 0.4rem;
+        margin-block-end: 0.9rem;
+        scrollbar-width: thin;
+      }
+
+      .app-chip {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+        padding: 0.55rem 0.8rem;
+        border-radius: var(--radius-md);
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        min-inline-size: 168px;
+        text-align: start;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+          border-color: var(--border-strong);
+          background: var(--bg-elev-2);
+        }
+
+        &[aria-pressed="true"] {
+          border-color: var(--accent-indigo);
+          background: rgb(110 123 242 / 0.1);
+        }
+      }
+
+      .app-chip-top {
+        inline-size: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 620;
+      }
+
+      .app-chip-name {
+        color: var(--text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-inline-size: 145px;
+      }
+
+      .app-chip-meta {
+        font-family: var(--font-mono);
+        font-size: 0.71rem;
+        color: var(--text-muted);
+      }
+
+      .section-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-block-end: 0.75rem;
+      }
+
+      .section-title {
+        font-size: 0.94rem;
+        font-weight: 640;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .table-wrapper {
+        overflow: auto;
+        max-inline-size: 100%;
+        max-block-size: min(680px, 76vh);
+        container-type: inline-size;
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+      }
+
+      .sessions-table {
+        inline-size: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        --label-2: "Context Size";
+        --label-3: "Cache Integrity";
+        --label-4: "1h Cache TTL";
+        --label-5: "Same vs New";
+        --label-6: "Total Spend";
+        --label-7: "Status";
+      }
+
+      .sessions-table caption {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .sessions-table thead {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 3;
+        background: var(--bg-elev-2);
+      }
+
+      .sessions-table thead th {
+        padding: 0.68rem 0.9rem;
+        font-size: 0.71rem;
+        font-weight: 620;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        text-align: start;
+        border-block-end: 1px solid var(--border-default);
+        white-space: nowrap;
+      }
+
+      .sessions-table thead th.num,
+      .sessions-table tbody td.num {
+        text-align: end;
+      }
+
+      .sessions-table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.12s ease;
+
+        &:hover {
+          background: var(--bg-hover);
+        }
+
+        &:hover th[scope="row"] {
+          background: var(--bg-hover);
+        }
+      }
+
+      .sessions-table tbody th[scope="row"],
+      .sessions-table tbody td {
+        padding: 0.75rem 0.9rem;
+        border-block-end: 1px solid var(--border-subtle);
+        vertical-align: middle;
+      }
+
+      .sessions-table tbody tr:last-child :is(th, td) {
+        border-block-end: 0;
+      }
+
+      .sessions-table tbody th[scope="row"] {
+        position: sticky;
+        inset-inline-start: 0;
+        z-index: 1;
+        background: var(--bg-elev-1);
+        text-align: start;
+        font-weight: 500;
+        min-inline-size: 250px;
+        max-inline-size: 340px;
+        transition: background-color 0.12s ease;
+      }
+
+      @container (width < 840px) {
+        .sessions-table,
+        .sessions-table thead,
+        .sessions-table tbody,
+        .sessions-table tr,
+        .sessions-table th,
+        .sessions-table td {
+          display: block;
+        }
+
+        .sessions-table thead {
+          display: none;
+        }
+
+        .sessions-table tbody tr {
+          margin: 0.65rem;
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-md);
+          overflow: hidden;
+        }
+
+        .sessions-table tbody th[scope="row"] {
+          position: sticky;
+          inset-block-start: 0;
+          z-index: 2;
+          max-inline-size: none;
+          background: var(--bg-elev-2);
+        }
+
+        .sessions-table tbody td,
+        .sessions-table tbody td.num {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          text-align: end;
+          padding-block: 0.5rem;
+        }
+
+        .sessions-table tbody td:nth-child(2)::before { content: var(--label-2) ": "; color: var(--text-muted); font-size: 0.75rem; }
+        .sessions-table tbody td:nth-child(3)::before { content: var(--label-3) ": "; color: var(--text-muted); font-size: 0.75rem; }
+        .sessions-table tbody td:nth-child(4)::before { content: var(--label-4) ": "; color: var(--text-muted); font-size: 0.75rem; }
+        .sessions-table tbody td:nth-child(5)::before { content: var(--label-5) ": "; color: var(--text-muted); font-size: 0.75rem; }
+        .sessions-table tbody td:nth-child(6)::before { content: var(--label-6) ": "; color: var(--text-muted); font-size: 0.75rem; }
+        .sessions-table tbody td:nth-child(7)::before { content: var(--label-7) ": "; color: var(--text-muted); font-size: 0.75rem; }
+      }
+
+      .session-cell-top {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-block-end: 0.22rem;
+      }
+
+      .app-tag {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        padding: 0.1rem 0.42rem;
+        border-radius: 5px;
+        background: var(--accent-indigo-soft);
+        color: #9da7ff;
+        border: 1px solid rgb(110 123 242 / 0.28);
+        white-space: nowrap;
+      }
+
+      .session-title-text {
+        font-size: 0.84rem;
+        font-weight: 580;
+        color: var(--text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .session-sub-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+
+      .ctx-meter {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.24rem;
+        min-inline-size: 86px;
+      }
+
+      .ctx-bar-bg {
+        inline-size: 82px;
+        block-size: 5px;
+        background: var(--bg-elev-3);
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+      }
+
+      .ctx-bar-fill {
+        block-size: 100%;
+        inline-size: calc(var(--ctx-pct, 0) * 1%);
+        border-radius: var(--radius-pill);
+        background: var(--ctx-color, var(--accent-emerald));
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.32rem;
+        padding: 0.2rem 0.52rem;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 580;
+        white-space: nowrap;
+      }
+
+      .badge-emerald {
+        background: var(--accent-emerald-soft);
+        color: #34d399;
+        border: 1px solid rgb(16 185 129 / 0.28);
+      }
+
+      .badge-amber {
+        background: var(--accent-amber-soft);
+        color: #fbbf24;
+        border: 1px solid rgb(245 158 11 / 0.3);
+      }
+
+      .badge-crimson {
+        background: var(--accent-crimson-soft);
+        color: #fb7185;
+        border: 1px solid rgb(244 63 94 / 0.32);
+      }
+
+      .badge-cyan {
+        background: var(--accent-cyan-soft);
+        color: #67e8f9;
+        border: 1px solid rgb(34 211 238 / 0.28);
+      }
+
+      .badge-muted {
+        background: rgb(255 255 255 / 0.04);
+        color: var(--text-muted);
+        border: 1px solid var(--border-subtle);
+      }
+
+      dialog {
+        color: var(--text-primary);
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-default);
+        box-shadow: var(--shadow-modal);
+        opacity: 0;
+        transition-property: opacity, transform, display, overlay;
+        transition-duration: 0.22s;
+        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        transition-behavior: allow-discrete;
+      }
+
+      dialog:modal {
+        overscroll-behavior: contain;
+      }
+
+      dialog::backdrop {
+        overflow: hidden;
+        overscroll-behavior: contain;
+        background-color: rgb(0 0 0 / 0);
+        backdrop-filter: blur(0px);
+        transition-property: background-color, backdrop-filter, display, overlay;
+        transition-duration: 0.22s;
+        transition-timing-function: ease-out;
+        transition-behavior: allow-discrete;
+      }
+
+      #session-modal {
+        margin: auto;
+        inline-size: min(1140px, 95vw);
+        max-block-size: 91dvh;
+        border-radius: var(--radius-lg);
+        transform: translateY(10px) scale(0.98);
+      }
+
+      #sim-drawer {
+        margin-inline-start: auto;
+        margin-inline-end: 0;
+        margin-block: 0;
+        inline-size: min(690px, 96vw);
+        block-size: 100dvh;
+        max-block-size: 100dvh;
+        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+        border-inline-end: 0;
+        transform: translateX(28px);
+      }
+
+      :is(#session-modal[open]):where(:not([data-closing])) {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+
+        @starting-style {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+
+        &::backdrop {
+          background-color: rgb(3 5 10 / 0.72);
+          backdrop-filter: blur(5px);
+
+          @starting-style {
+            background-color: rgb(3 5 10 / 0);
+            backdrop-filter: blur(0px);
+          }
+        }
+      }
+
+      :is(#sim-drawer[open]):where(:not([data-closing])) {
+        opacity: 1;
+        transform: translateX(0);
+
+        @starting-style {
+          opacity: 0;
+          transform: translateX(28px);
+        }
+
+        &::backdrop {
+          background-color: rgb(3 5 10 / 0.62);
+          backdrop-filter: blur(3px);
+
+          @starting-style {
+            background-color: rgb(3 5 10 / 0);
+            backdrop-filter: blur(0px);
+          }
+        }
+      }
+
+      .dialog-header {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 25;
+        background: rgb(13 15 21 / 0.94);
+        backdrop-filter: blur(12px);
+        padding: 1rem 1.3rem;
+        border-block-end: 1px solid var(--border-subtle);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .dialog-body {
+        padding: 1.25rem 1.3rem 1.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .chart-panel {
+        position: relative;
+        z-index: 1;
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 1rem 1.1rem;
+      }
+
+      .chart-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        margin-block-end: 0.75rem;
+      }
+
+      .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.85rem;
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+      }
+
+      .chart-stage {
+        position: relative;
+        inline-size: 100%;
+        block-size: 250px;
+      }
+
+      .chart-canvas {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+        border-radius: var(--radius-sm);
+        cursor: crosshair;
+      }
+
+      .chart-tooltip {
+        position: absolute;
+        z-index: 15;
+        pointer-events: none;
+        min-inline-size: 235px;
+        max-inline-size: 310px;
+        background: rgb(10 12 18 / 0.96);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        padding: 0.62rem 0.75rem;
+        box-shadow: 0 12px 32px rgb(0 0 0 / 0.7);
+        font-size: 0.75rem;
+        inset-block-start: 8px;
+        inset-inline-start: 0;
+        transform: translateX(var(--tt-x, 12px));
+      }
+
+      .tt-break-box {
+        margin-block-start: 0.42rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 5px;
+        background: var(--accent-crimson-soft);
+        border: 1px solid rgb(244 63 94 / 0.38);
+        color: #fda4af;
+        font-size: 0.72rem;
+        line-height: 1.35;
+      }
+
+      .break-pills-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-block-start: 0.7rem;
+      }
+
+      .break-jump-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.24rem 0.55rem;
+        border-radius: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.71rem;
+        background: rgb(244 63 94 / 0.11);
+        border: 1px solid rgb(244 63 94 / 0.32);
+        color: #fda4af;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+          background: rgb(244 63 94 / 0.2);
+          border-color: rgb(244 63 94 / 0.55);
+        }
+      }
+
+      .sim-panel {
+        background:
+          linear-gradient(180deg, rgb(110 123 242 / 0.04), transparent 140px),
+          var(--bg-elev-2);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-md);
+        padding: 1.1rem 1.15rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .sim-controls-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: 1rem;
+        padding: 0.85rem 0.95rem;
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+      }
+
+      @media (max-width: 720px) {
+        .sim-controls-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .sim-control-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+      }
+
+      .sim-control-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .sim-readout-pill {
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 650;
+        color: var(--accent-cyan);
+        background: var(--accent-cyan-soft);
+        border: 1px solid rgb(34 211 238 / 0.3);
+        padding: 0.1rem 0.5rem;
+        border-radius: var(--radius-pill);
+      }
+
+      input[type="range"] {
+        --slider-track-size: 0.42rem;
+        --slider-thumb-size: 1.12rem;
+        --slider-track-radius: 999px;
+        --slider-thumb-radius: 50%;
+        --slider-track-color: #252b3b;
+        --slider-fill-color: var(--accent-indigo);
+        --slider-thumb-color: #f8fafc;
+        --slider-direction: to right;
+
+        &:dir(rtl) {
+          --slider-direction: to left;
+        }
+
+        --attr-min: attr(min type(<number>), 5);
+        --attr-max: attr(max type(<number>), 100);
+        --control-value: attr(value type(<number>), 45);
+        --slider-progress: calc(
+          progress(var(--control-value), var(--attr-min), var(--attr-max)) * 100%
+        );
+
+        appearance: none;
+        inline-size: 100%;
+        block-size: 2rem;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      @supports not (opacity: progress(1, 0, 100)) {
+        input[type="range"] {
+          --slider-progress: calc(
+            (var(--control-value) - var(--attr-min)) /
+            (var(--attr-max) - var(--attr-min)) * 100%
+          );
+        }
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        block-size: var(--slider-track-size);
+        border: 0;
+        border-radius: var(--slider-track-radius);
+        background: linear-gradient(
+          var(--slider-direction),
+          var(--slider-fill-color) var(--slider-progress),
+          var(--slider-track-color) var(--slider-progress)
+        );
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        inline-size: var(--slider-thumb-size);
+        block-size: var(--slider-thumb-size);
+        margin-block-start: calc(
+          (var(--slider-track-size) - var(--slider-thumb-size)) / 2
+        );
+        border: 2px solid var(--slider-fill-color);
+        border-radius: var(--slider-thumb-radius);
+        background: var(--slider-thumb-color);
+        box-shadow: 0 2px 6px rgb(0 0 0 / 0.5);
+      }
+
+      input[type="range"]::-moz-range-track {
+        block-size: var(--slider-track-size);
+        border: 0;
+        border-radius: var(--slider-track-radius);
+        background: var(--slider-track-color);
+      }
+
+      input[type="range"]::-moz-range-progress {
+        block-size: var(--slider-track-size);
+        border-radius: var(--slider-track-radius);
+        background: var(--slider-fill-color);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        inline-size: var(--slider-thumb-size);
+        block-size: var(--slider-thumb-size);
+        border: 2px solid var(--slider-fill-color);
+        border-radius: var(--slider-thumb-radius);
+        background: var(--slider-thumb-color);
+        box-shadow: 0 2px 6px rgb(0 0 0 / 0.5);
+      }
+
+      input[type="range"]:focus-visible {
+        outline: 2px solid var(--slider-fill-color);
+        outline-offset: 4px;
+      }
+
+      .segmented-toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        padding: 3px;
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-sm);
+      }
+
+      .segmented-option {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.42rem 0.55rem;
+        border-radius: 6px;
+        cursor: pointer;
+        text-align: center;
+        color: var(--text-secondary);
+        transition: background-color 0.15s ease, color 0.15s ease;
+
+        &:hover {
+          color: var(--text-primary);
+        }
+
+        &:has(:checked) {
+          background: var(--bg-elev-3);
+          color: var(--text-primary);
+          box-shadow: 0 1px 4px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(110 123 242 / 0.45);
+        }
+
+        &:has(:focus-visible) {
+          outline: 2px solid var(--accent-indigo);
+          outline-offset: 1px;
+        }
+      }
+
+      .segmented-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        inline-size: 1px;
+        block-size: 1px;
+        pointer-events: none;
+      }
+
+      .seg-title {
+        font-size: 0.77rem;
+        font-weight: 620;
+      }
+
+      .seg-sub {
+        font-size: 0.67rem;
+        color: var(--text-muted);
+      }
+
+      .sim-section-card {
+        background: var(--bg-elev-1);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        padding: 0.9rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .sim-card-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .sim-card-title {
+        font-size: 0.83rem;
+        font-weight: 640;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .winner-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.68rem;
+        font-weight: 680;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        background: var(--accent-emerald-soft);
+        color: #6ee7b7;
+        border: 1px solid rgb(16 185 129 / 0.42);
+      }
+
+      .versus-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+      }
+
+      .versus-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.65rem;
+      }
+
+      @media (max-width: 720px) {
+        .versus-grid-2, .versus-grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .option-box {
+        padding: 0.75rem 0.85rem;
+        border-radius: var(--radius-sm);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.45rem;
+        position: relative;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .option-box[data-winner="true"] {
+        border-color: rgb(16 185 129 / 0.55);
+        background:
+          linear-gradient(180deg, rgb(16 185 129 / 0.08), transparent 80%),
+          var(--bg-elev-2);
+      }
+
+      .option-box[data-trap="true"] {
+        border-color: rgb(244 63 94 / 0.28);
+      }
+
+      .opt-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.4rem;
+      }
+
+      .opt-name {
+        font-size: 0.79rem;
+        font-weight: 640;
+        color: var(--text-primary);
+      }
+
+      .opt-price {
+        font-family: var(--font-mono);
+        font-size: 1.18rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .opt-meta {
+        font-family: var(--font-mono);
+        font-size: 0.71rem;
+        color: var(--text-secondary);
+      }
+
+      .opt-bar-track {
+        block-size: 5px;
+        background: var(--bg-elev-1);
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+      }
+
+      .opt-bar-fill {
+        block-size: 100%;
+        inline-size: calc(var(--bar-pct, 0) * 1%);
+        border-radius: var(--radius-pill);
+        background: var(--bar-color, var(--accent-indigo));
+        transition: inline-size 0.2s ease;
+      }
+
+      .sim-summary-note {
+        font-size: 0.77rem;
+        color: var(--text-secondary);
+        line-height: 1.45;
+        padding: 0.5rem 0.68rem;
+        background: rgb(255 255 255 / 0.025);
+        border-inline-start: 2px solid var(--accent-indigo);
+        border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+      }
+
+      .cmd-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.45rem 0.65rem;
+        background: var(--bg-canvas);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xs);
+      }
+
+      .cmd-row code {
+        font-size: 0.73rem;
+        color: #a5f3fc;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .decisions-list {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .decision-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.58rem 0.8rem;
+        border-radius: var(--radius-sm);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        font-size: 0.8rem;
+      }
+
+      details.turns-disclosure {
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      details.turns-disclosure summary {
+        padding: 0.78rem 1rem;
+        font-size: 0.83rem;
+        font-weight: 620;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        list-style: none;
+      }
+
+      details.turns-disclosure summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.turns-disclosure summary::after {
+        content: "▾";
+        color: var(--text-muted);
+        transition: transform 0.18s ease;
+      }
+
+      details.turns-disclosure[open] summary::after {
+        transform: rotate(180deg);
+      }
+
+      .toast {
+        position: fixed;
+        inset-block-end: 1.25rem;
+        inset-inline-end: 1.25rem;
+        z-index: 90;
+        padding: 0.55rem 0.9rem;
+        border-radius: var(--radius-sm);
+        background: var(--bg-elev-3);
+        border: 1px solid rgb(16 185 129 / 0.45);
+        color: #a7f3d0;
+        font-size: 0.78rem;
+        font-weight: 560;
+        box-shadow: 0 12px 30px rgb(0 0 0 / 0.6);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      .preset-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+
+      .preset-chip {
+        padding: 0.14rem 0.44rem;
+        border-radius: 5px;
+        font-family: var(--font-mono);
+        font-size: 0.69rem;
+        color: var(--text-muted);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--border-subtle);
+
+        &:hover {
+          color: var(--text-primary);
+          border-color: var(--border-strong);
+        }
+
+        &[aria-pressed="true"] {
+          color: var(--accent-cyan);
+          border-color: rgb(34 211 238 / 0.4);
+          background: var(--accent-cyan-soft);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        dialog {
+          transform: none;
+          transition-duration: 0.08s;
+        }
+        @starting-style {
+          #session-modal[open], #sim-drawer[open] {
+            transform: none;
+          }
+        }
+        .use-it-pill, .pulse-dot::after {
+          animation: none;
+        }
+      }
+    }
+
+    @layer utilities {
+      [hidden] {
+        display: none !important;
+      }
+      .sr-only {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      .text-emerald { color: #34d399; }
+      .text-amber { color: #fbbf24; }
+      .text-crimson { color: #fb7185; }
+      .text-cyan { color: #67e8f9; }
+      .text-muted { color: var(--text-muted); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">
+            vibe-usage
+            <span class="badge badge-muted mono">ccdash</span>
+          </h1>
+          <p class="brand-sub">Local Claude Code usage &amp; cache monitor</p>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+        <search class="toolbar-actions" aria-label="Filter sessions">
+          <div class="pill-group" role="group" aria-label="Time window" id="days-pill-group">
+            <button type="button" class="pill-btn" data-days="1" aria-pressed="false">24h</button>
+            <button type="button" class="pill-btn" data-days="2" aria-pressed="true">2d</button>
+            <button type="button" class="pill-btn" data-days="7" aria-pressed="false">7d</button>
+            <button type="button" class="pill-btn" data-days="14" aria-pressed="false">14d</button>
+            <button type="button" class="pill-btn" data-days="0" aria-pressed="false">All</button>
+          </div>
+
+          <label for="app-select" class="sr-only">Filter by project</label>
+          <select id="app-select" class="select-control" aria-label="Filter by project">
+            <option value="">All projects</option>
+          </select>
+
+          <div class="search-box">
+            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+            <label for="session-search" class="sr-only">Search sessions</label>
+            <input type="search" id="session-search" class="input-control" placeholder="Filter sessions...">
+            <span class="kbd-hint" aria-hidden="true">/</span>
+          </div>
+        </search>
+
+        <button type="button" id="open-sim-drawer-btn" class="btn btn-primary">
+          <span>Simulator</span>
+          <span class="kbd-hint" style="background: rgb(0 0 0 / 0.25); color: #e0e7ff; border-color: rgb(255 255 255 / 0.2);" aria-hidden="true">S</span>
+        </button>
+
+        <button type="button" id="refresh-btn" class="btn" aria-label="Refresh usage data">
+          <svg id="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+            <path d="M16 16h5v5"></path>
+          </svg>
+          <span id="last-scan-label" class="mono" style="font-size: 0.74rem;">Live</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="hero-grid" aria-labelledby="quota-heading">
+      <h2 id="quota-heading" class="sr-only">5-Hour Quota Window</h2>
+      <div id="quota-banner" class="card quota-banner" data-urgent="false">
+        <div class="quota-left">
+          <div class="quota-header">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem;">
+              <span id="quota-status-pill" class="status-pill active">
+                <span class="dot" style="background: currentColor;"></span>
+                <span id="quota-status-text">Active 5h Block</span>
+              </span>
+              <span id="use-it-indicator" class="use-it-pill" hidden>
+                <span class="pulse-dot" aria-hidden="true"></span>
+                <span>Use It Or Lose It (&lt;60m left)</span>
+              </span>
+            </div>
+            <span id="quota-window-range" class="quota-window-meta">--:-- - --:--</span>
+          </div>
+
+          <div class="quota-clock-row">
+            <div>
+              <div id="quota-countdown" class="quota-countdown">Loading...</div>
+              <div id="quota-elapsed-label" class="brand-sub tabular">Elapsed: --m / 300m</div>
+            </div>
+            <div style="text-align: end;">
+              <div class="brand-sub">Block Spend</div>
+              <div id="quota-spend-val" class="mono" style="font-size: 1.28rem; font-weight: 700; color: #34d399;">$0.00</div>
+            </div>
+          </div>
+
+          <div class="quota-progress-wrap">
+            <div class="quota-track" role="progressbar" id="quota-progressbar" aria-label="5-hour block progress" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0">
+              <div id="quota-fill" class="quota-fill"></div>
+              <div class="quota-threshold-marker" aria-hidden="true"></div>
+            </div>
+            <div class="quota-ticks" aria-hidden="true">
+              <span>0h</span>
+              <span>1h</span>
+              <span>2h</span>
+              <span>3h</span>
+              <span class="urgent-tick">4h (60m left)</span>
+              <span>5h</span>
+            </div>
+          </div>
+
+          <div id="quota-advice" class="quota-advice">
+            Scanning session history...
+          </div>
+
+          <div id="quota-token-mix" class="token-mix-row"></div>
+        </div>
+
+        <div class="burn-gauge-card">
+          <div style="inline-size: 100%; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.75rem; font-weight: 620; color: var(--text-secondary);">Burn Rate</span>
+            <span id="burn-tier-badge" class="badge badge-cyan mono">0 tok/m</span>
+          </div>
+
+          <div class="gauge-svg-wrap">
+            <svg width="210" height="112" viewBox="0 0 210 112" role="img" aria-labelledby="burn-gauge-title">
+              <title id="burn-gauge-title">5-hour block burn rate gauge</title>
+              <defs>
+                <linearGradient id="burnArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981"></stop>
+                  <stop offset="50%" stop-color="#22d3ee"></stop>
+                  <stop offset="80%" stop-color="#f59e0b"></stop>
+                  <stop offset="100%" stop-color="#f43f5e"></stop>
+                </linearGradient>
+              </defs>
+              <path d="M 20 100 A 85 85 0 0 1 190 100" fill="none" stroke="#222838" stroke-width="13" stroke-linecap="round"></path>
+              <path id="burn-gauge-arc" d="M 20 100 A 85 85 0 0 1 190 100" pathLength="100" fill="none" stroke="url(#burnArcGrad)" stroke-width="13" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="transition: stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1);"></path>
+              <circle id="burn-gauge-dot" cx="20" cy="100" r="5" fill="#f8fafc" stroke="#08090d" stroke-width="2"></circle>
+            </svg>
+            <div class="gauge-center-readout">
+              <div id="gauge-tpm-val" class="gauge-rate-val">0</div>
+              <div class="gauge-rate-lbl">Tokens / Min</div>
+            </div>
+          </div>
+
+          <div class="gauge-stats-row">
+            <div>
+              <div id="gauge-cph-val" class="gauge-stat-val">$0.00</div>
+              <div class="gauge-stat-lbl">Rate / Hr</div>
+            </div>
+            <div>
+              <div id="gauge-proj-val" class="gauge-stat-val">$0.00</div>
+              <div class="gauge-stat-lbl">5h Est.</div>
+            </div>
+            <div>
+              <div id="gauge-total-tok" class="gauge-stat-val">0</div>
+              <div class="gauge-stat-lbl">Block Tokens</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="kpi-heading">
+      <h2 id="kpi-heading" class="sr-only">Summary</h2>
+      <div class="kpi-grid">
+        <article class="card kpi-card">
+          <div class="kpi-label">
+            <span>Total Spend</span>
+            <span id="kpi-sessions-pill" class="badge badge-muted mono">0 sessions</span>
+          </div>
+          <div id="kpi-total-cost" class="kpi-value text-emerald">$0.00</div>
+          <div id="kpi-cache-saved" class="kpi-sub">--</div>
+        </article>
+
+        <article class="card kpi-card">
+          <div class="kpi-label">
+            <span>Warm 1h Caches</span>
+            <span class="badge badge-cyan mono">TTL &lt; 60m</span>
+          </div>
+          <div id="kpi-warm-count" class="kpi-value text-cyan">0</div>
+          <div id="kpi-warm-sub" class="kpi-sub">Active sessions with warm prefix</div>
+        </article>
+
+        <article class="card kpi-card">
+          <div class="kpi-label">
+            <span>Avg Cache Integrity</span>
+            <span id="kpi-breaks-pill" class="badge badge-amber mono">0 breaks</span>
+          </div>
+          <div id="kpi-integrity" class="kpi-value">100%</div>
+          <div id="kpi-wasted-writes" class="kpi-sub">0k wasted write tokens</div>
+        </article>
+
+        <article class="card kpi-card">
+          <div class="kpi-label">
+            <span>Large Contexts</span>
+            <span class="badge badge-crimson mono">&gt;140k</span>
+          </div>
+          <div id="kpi-bloated-count" class="kpi-value text-amber">0</div>
+          <div id="kpi-bloated-sub" class="kpi-sub">Select a row to inspect or simulate</div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="sr-only">Projects</h2>
+      <div id="apps-strip" class="apps-strip" role="group" aria-label="Filter by project"></div>
+    </section>
+
+    <section aria-labelledby="sessions-heading">
+      <div class="section-bar">
+        <h2 id="sessions-heading" class="section-title">
+          <span>Sessions</span>
+          <span id="visible-count-badge" class="badge badge-muted mono">0</span>
+        </h2>
+
+        <div class="pill-group" role="group" aria-label="Status filter" id="status-filter-group">
+          <button type="button" class="pill-btn" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="pill-btn" data-filter="warm" aria-pressed="false">Warm 1h</button>
+          <button type="button" class="pill-btn" data-filter="bloated" aria-pressed="false">&gt;140k Ctx</button>
+          <button type="button" class="pill-btn" data-filter="breaks" aria-pressed="false">Cache Breaks</button>
+        </div>
+      </div>
+
+      <div tabindex="0" role="region" aria-labelledby="sessions-table-caption" class="table-wrapper">
+        <table class="sessions-table">
+          <caption id="sessions-table-caption">Claude Code sessions sorted by recent activity</caption>
+          <thead>
+            <tr>
+              <th scope="col">Project / Session</th>
+              <th scope="col" class="num">Context</th>
+              <th scope="col" class="num">Integrity</th>
+              <th scope="col" class="num">1h TTL</th>
+              <th scope="col">Split</th>
+              <th scope="col" class="num">Cost</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="sessions-tbody">
+            <tr>
+              <td colspan="7" style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+                Loading sessions...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="sim-drawer" closedby="any" aria-labelledby="sim-drawer-title">
+    <div class="dialog-header">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-block-end: 0.2rem;">
+          <span class="badge badge-cyan mono">Simulator</span>
+          <span class="kbd-hint">Esc</span>
+        </div>
+        <h2 id="sim-drawer-title" style="font-size: 1.05rem; font-weight: 660;">Session Cost Simulator</h2>
+        <p class="brand-sub">Compare staying in session, <code>ccd</code> handoff, <code>/clear</code>, <code>/compact</code>, and 50m <code>/loop</code> pings.</p>
+      </div>
+      <button type="button" class="btn btn-ghost" data-close-dialog="sim-drawer" aria-label="Close simulator">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dialog-body">
+      <div class="sim-section-card" style="background: var(--bg-elev-2);">
+        <div class="sim-control-label">
+          <label for="drawer-session-select">Session</label>
+          <span id="drawer-target-meta" class="mono text-muted" style="font-size: 0.72rem;"></span>
+        </div>
+        <select id="drawer-session-select" class="select-control" style="inline-size: 100%;" autofocus></select>
+
+        <div id="drawer-custom-controls" hidden style="display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 0.65rem; padding-block-start: 0.45rem; border-block-start: 1px solid var(--border-subtle);">
+          <div class="sim-control-block">
+            <label for="custom-ctx-input" class="sim-control-label">
+              <span>Context</span>
+              <span id="custom-ctx-lbl" class="mono text-cyan">180k</span>
+            </label>
+            <input type="range" id="custom-ctx-input" min="20000" max="500000" step="5000" value="180000">
+          </div>
+          <div class="sim-control-block">
+            <label for="custom-model-select" class="sim-control-label">Model</label>
+            <select id="custom-model-select" class="select-control">
+              <option value="opus-5">opus-5 ($4/$20, $0.20 rd)</option>
+              <option value="opus-4">opus-4 ($5/$25, $0.50 rd)</option>
+              <option value="sonnet">sonnet ($3/$15, $0.30 rd)</option>
+              <option value="haiku">haiku ($1/$5, $0.10 rd)</option>
+            </select>
+          </div>
+          <div class="sim-control-block">
+            <label for="custom-warm-select" class="sim-control-label">1h Cache</label>
+            <select id="custom-warm-select" class="select-control">
+              <option value="warm">Warm (TTL active)</option>
+              <option value="cold">Cold (expired)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="drawer-simulator-mount"></div>
+    </div>
+  </dialog>
+
+  <dialog id="session-modal" closedby="any" aria-labelledby="session-modal-title">
+    <div class="dialog-header">
+      <div style="min-inline-size: 0; flex: 1;">
+        <div id="modal-badges-row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-block-end: 0.35rem;"></div>
+        <h2 id="session-modal-title" style="font-size: 1.1rem; font-weight: 660; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Session</h2>
+        <div id="modal-sub-row" class="session-sub-meta" style="margin-block-start: 0.25rem; flex-wrap: wrap;"></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.45rem;">
+        <button type="button" id="copy-resume-btn" class="btn" aria-label="Copy claude --resume command">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span class="mono" style="font-size: 0.74rem;">claude --resume</span>
+        </button>
+        <button type="button" class="btn btn-ghost" data-close-dialog="session-modal" aria-label="Close modal" autofocus>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="dialog-body">
+      <div id="modal-decisions-list" class="decisions-list"></div>
+
+      <section class="chart-panel" aria-labelledby="chart-section-title">
+        <div class="chart-header">
+          <div>
+            <h3 id="chart-section-title" class="section-title" style="font-size: 0.88rem;">
+              Context Growth &amp; Cache Breaks
+            </h3>
+            <p class="brand-sub">Area: <code>cache_read</code>. Bars: <code>cache_creation</code> (red &gt; 25k).</p>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item">
+              <span class="dot" style="background: #22d3ee;"></span>
+              <span>Read (<code>rd</code>)</span>
+            </span>
+            <span class="legend-item">
+              <span class="dot" style="background: #64748b;"></span>
+              <span>Write (&le;25k)</span>
+            </span>
+            <span class="legend-item">
+              <span class="dot" style="background: #f43f5e;"></span>
+              <span>Spike (&gt;25k)</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="chart-stage" id="chart-stage">
+          <canvas id="timeline-canvas" class="chart-canvas" tabindex="0" aria-label="Turn-by-turn context and cache break timeline"></canvas>
+          <div id="chart-tooltip" class="chart-tooltip" hidden></div>
+        </div>
+
+        <div id="modal-break-pills" class="break-pills-strip"></div>
+      </section>
+
+      <section aria-labelledby="modal-sim-heading">
+        <h3 id="modal-sim-heading" class="sr-only">Session Cost Simulator</h3>
+        <div id="modal-simulator-mount"></div>
+      </section>
+
+      <details class="turns-disclosure" id="turns-disclosure">
+        <summary>
+          <span id="turns-summary-label">Turns</span>
+        </summary>
+        <div style="padding: 0 1rem 1rem;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-block-end: 0.65rem;">
+            <div class="pill-group" role="group" aria-label="Filter turns">
+              <button type="button" class="pill-btn" id="turns-filter-all" aria-pressed="true">All</button>
+              <button type="button" class="pill-btn" id="turns-filter-breaks" aria-pressed="false">Spikes &gt;25k</button>
+            </div>
+            <span id="turns-showing-meta" class="mono text-muted" style="font-size: 0.72rem;"></span>
+          </div>
+          <div style="overflow-x: auto; max-block-size: 320px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+            <table style="inline-size: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.73rem;">
+              <thead style="position: sticky; inset-block-start: 0; background: var(--bg-elev-3);">
+                <tr>
+                  <th style="padding: 0.48rem 0.65rem; text-align: start; color: var(--text-muted);">#</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: start; color: var(--text-muted);">Time</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: start; color: var(--text-muted);">Model</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: end; color: var(--text-muted);">Read</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: end; color: var(--text-muted);">Write</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: end; color: var(--text-muted);">Out</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: end; color: var(--text-muted);">Gap</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: end; color: var(--text-muted);">Cost</th>
+                  <th style="padding: 0.48rem 0.65rem; text-align: start; color: var(--text-muted);">Break Cause</th>
+                </tr>
+              </thead>
+              <tbody id="modal-turns-tbody"></tbody>
+            </table>
+          </div>
+          <div id="turns-load-more-wrap" style="margin-block-start: 0.6rem; text-align: center;" hidden>
+            <button type="button" id="turns-load-more-btn" class="btn">Load more</button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module">
+    const DEFAULT_PRICING = {
+      'opus-5': { in: 4.0, out: 20.0, w1h: 8.0, w5m: 5.0, read: 0.20, minCache: 4096 },
+      'opus-4': { in: 5.0, out: 25.0, w1h: 10.0, w5m: 6.25, read: 0.50, minCache: 4096 },
+      'sonnet': { in: 3.0, out: 15.0, w1h: 6.0, w5m: 3.75, read: 0.30, minCache: 2048 },
+      'haiku':  { in: 1.0, out: 5.0, w1h: 2.0, w5m: 1.25, read: 0.10, minCache: 4096 },
+      'fable':  { in: 3.0, out: 15.0, w1h: 6.0, w5m: 3.75, read: 0.30, minCache: 2048 },
+    };
+
+    const state = {
+      pricing: { ...DEFAULT_PRICING },
+      days: 2,
+      appFilter: '',
+      searchQuery: '',
+      statusFilter: 'all',
+      sessions: [],
+      apps: [],
+      activeBlock: null,
+      scannedAt: null,
+      selectedSessionId: null,
+      turnsFilterBreaksOnly: false,
+      turnsLogLimit: 120,
+      chartHoverIdx: -1,
+      sim: {
+        steps: 45,
+        taskType: 'unrelated',
+        awayMin: 90,
+        drawerTargetId: '',
+        customCtx: 180000,
+        customModel: 'opus-5',
+        customWarm: true,
+      },
+    };
+
+    function getPriceTier(model = '') {
+      const m = String(model).toLowerCase();
+      if (m.includes('opus-5')) return state.pricing['opus-5'];
+      if (m.includes('opus')) return state.pricing['opus-4'];
+      if (m.includes('haiku')) return state.pricing['haiku'];
+      if (m.includes('fable')) return state.pricing['fable'];
+      return state.pricing['sonnet'];
+    }
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function fmtTok(n) {
+      const val = Number(n) || 0;
+      if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
+      if (val >= 1e6) return (val / 1e6).toFixed(2) + 'M';
+      if (val >= 1e3) return (val / 1e3).toFixed(1) + 'k';
+      return String(Math.round(val));
+    }
+
+    function fmtUSD(n, decimals = 2) {
+      const val = Number(n) || 0;
+      const abs = Math.abs(val);
+      const d = decimals === 'auto' ? (abs > 0 && abs < 0.05 ? 3 : 2) : decimals;
+      return (val < 0 ? '-$' : '$') + abs.toFixed(d);
+    }
+
+    function fmtDurationSec(sec) {
+      const s = Math.max(0, Math.round(sec || 0));
+      if (s < 60) return `${s}s`;
+      const m = Math.floor(s / 60);
+      const remS = s % 60;
+      if (m < 60) return remS > 0 && m < 10 ? `${m}m ${remS}s` : `${m}m`;
+      const h = Math.floor(m / 60);
+      const remM = m % 60;
+      return `${h}h ${remM}m`;
+    }
+
+    function fmtRelativeAge(ageMin) {
+      if (ageMin < 1) return 'just now';
+      if (ageMin < 60) return `${ageMin}m ago`;
+      const h = Math.floor(ageMin / 60);
+      const m = ageMin % 60;
+      if (h < 24) return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
+      const d = Math.floor(h / 24);
+      return `${d}d ${h % 24}h ago`;
+    }
+
+    function fmtLocalClock(iso) {
+      if (!iso) return '--:--';
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.hidden = true;
+      }, 2200);
+    }
+
+    async function copyText(text, label = 'Copied to clipboard') {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(label);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast(label);
+      }
+    }
+
+    let supportsDisplayTransition;
+    function canTransitionDisplay() {
+      if (supportsDisplayTransition !== undefined) return supportsDisplayTransition;
+      if (!window.CSS?.supports?.('transition-behavior', 'allow-discrete') || !document.body) {
+        return false;
+      }
+      const probe = document.createElement('div');
+      probe.style.cssText = 'transition: display 1s allow-discrete !important; display: block;';
+      document.body.appendChild(probe);
+      getComputedStyle(probe).display;
+      probe.style.display = 'none';
+      supportsDisplayTransition = getComputedStyle(probe).display === 'block';
+      probe.remove();
+      return supportsDisplayTransition;
+    }
+
+    function supportsTopLayerExit() {
+      return window.CSS?.supports?.('overlay', 'auto') && canTransitionDisplay();
+    }
+
+    async function closeTopLayer(dialog) {
+      if (!dialog || !dialog.open) return;
+      if (!supportsTopLayerExit()) {
+        dialog.setAttribute('data-closing', '');
+        const animations = dialog.getAnimations({ subtree: true });
+        if (animations.length > 0) {
+          await Promise.race([
+            Promise.allSettled(animations.map(a => a.finished)),
+            new Promise(r => setTimeout(r, 400)),
+          ]);
+        }
+        if (!dialog.hasAttribute('data-closing')) return;
+        dialog.removeAttribute('data-closing');
+      }
+      dialog.close();
+    }
+
+    function setupDialogs() {
+      const dialogs = document.querySelectorAll('dialog');
+      for (const dialog of dialogs) {
+        dialog.addEventListener('cancel', event => {
+          event.preventDefault();
+          closeTopLayer(dialog);
+        });
+        dialog.addEventListener('close', () => {
+          dialog.returnValue = '';
+          if (dialog.id === 'session-modal') {
+            document.getElementById('chart-tooltip').hidden = true;
+          }
+        });
+      }
+
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        const outside = (e, dialog) => {
+          const r = dialog.getBoundingClientRect();
+          return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+        };
+        for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+          let pressedOutside = false;
+          dialog.addEventListener('pointerdown', e => {
+            pressedOutside = outside(e, dialog);
+          });
+          dialog.addEventListener('pointerup', e => {
+            if (pressedOutside && outside(e, dialog)) {
+              closeTopLayer(dialog);
+            }
+            pressedOutside = false;
+          });
+        }
+      }
+
+      document.querySelectorAll('[data-close-dialog]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.dataset.closeDialog);
+          if (target) closeTopLayer(target);
+        });
+      });
+    }
+
+    function syncSliderValue(slider, unitSuffix = '') {
+      if (!slider) return;
+      slider.style.setProperty('--attr-min', slider.min || 0);
+      slider.style.setProperty('--attr-max', slider.max || 100);
+      slider.style.setProperty('--control-value', slider.value);
+      if (unitSuffix) {
+        slider.setAttribute('aria-valuetext', `${slider.value} ${unitSuffix}`);
+      }
+    }
+
+    function runSimulation({
+      currentContext = 140000,
+      startCacheRead = 42000,
+      isWarm = true,
+      ageMin = 5,
+      ttlRemainingSec = 3300,
+      model = 'opus-5',
+      steps = 45,
+      taskType = 'unrelated',
+      awayMin = 90,
+      shortId = 'session',
+    }) {
+      const p = getPriceTier(model);
+      const nSteps = Math.max(5, Math.min(100, Math.round(steps)));
+      const away = Math.max(5, Math.min(2880, Math.round(awayMin)));
+      const baseStaticPrefix = Math.min(currentContext, Math.max(32000, startCacheRead || 42000));
+      const isSame = taskType === 'same';
+
+      const handoffTokens = isSame ? 12500 : 2500;
+      const newSessionStartCtx = Math.min(currentContext, baseStaticPrefix + handoffTokens);
+      const savedCtxPerStep = Math.max(0, currentContext - newSessionStartCtx);
+
+      const sameReadTokens = currentContext * nSteps;
+      const newReadTokens = newSessionStartCtx * nSteps;
+      const savedReadTokens = Math.max(0, sameReadTokens - newReadTokens);
+      const savedReadUSD = (savedReadTokens * p.read) / 1e6;
+
+      const sameTurn1WriteUSD = isWarm ? 0 : (currentContext * p.w1h) / 1e6;
+      const newTurn1WriteUSD = (((isWarm ? 0 : baseStaticPrefix) + handoffTokens) * p.w1h) / 1e6;
+      const sameTotalUSD =
+        sameTurn1WriteUSD +
+        ((isWarm ? nSteps : Math.max(0, nSteps - 1)) * currentContext * p.read + nSteps * 600 * p.out) / 1e6;
+      const newTotalUSD =
+        newTurn1WriteUSD +
+        (newReadTokens * p.read + nSteps * 600 * p.out) / 1e6;
+      const splitSavingsUSD = sameTotalUSD - newTotalUSD;
+
+      let splitWinner = 'SAME';
+      let splitReason = '';
+      if (!isWarm && currentContext >= 90000 && splitSavingsUSD > 0.05) {
+        splitWinner = 'NEW';
+        splitReason = `Cache expired (${ageMin}m idle). Resuming rewrites ${fmtTok(currentContext)} at 2.0x (${fmtUSD(sameTurn1WriteUSD)}) on turn 1. Starting a new session saves ${fmtUSD(splitSavingsUSD)} across ${nSteps} calls.`;
+      } else if (isSame && currentContext < 135000 && nSteps <= 35) {
+        splitWinner = 'SAME';
+        splitReason = `Same feature over ${nSteps} calls with ${fmtTok(currentContext)} context: staying inline keeps file state loaded without handoff setup.`;
+      } else if (splitSavingsUSD > (isSame ? 0.08 : 0.02) && savedCtxPerStep >= 15000) {
+        splitWinner = 'NEW';
+        const dropPct = currentContext > 0 ? Math.round((savedCtxPerStep / currentContext) * 100) : 0;
+        splitReason = `Drops per-step context from ${fmtTok(currentContext)} to ~${fmtTok(newSessionStartCtx)} (-${dropPct}%), saving ${fmtTok(savedReadTokens)} read tokens (${fmtUSD(splitSavingsUSD)} net) over ${nSteps} calls while keeping the ${fmtTok(baseStaticPrefix)} system prefix.`;
+      } else {
+        splitWinner = 'SAME';
+        splitReason = `Context (${fmtTok(currentContext)}) is close to the ${fmtTok(newSessionStartCtx)} baseline. Stay in this session.`;
+      }
+
+      const compactSummaryOutTokens = 3500;
+      const compactNewCachedCtx = baseStaticPrefix + 18000;
+      const clearRehydrateTokens = isSame ? 10000 : 0;
+      const clearWorkingCtx = Math.min(currentContext, baseStaticPrefix + 2500 + clearRehydrateTokens);
+
+      const keepTurn1USD = ((isWarm ? currentContext * p.read : currentContext * p.w1h) + 600 * p.out) / 1e6;
+      const keepTotalUSD = keepTurn1USD + Math.max(0, nSteps - 1) * ((currentContext * p.read + 600 * p.out) / 1e6);
+
+      const clearTurn1USD =
+        ((isWarm ? baseStaticPrefix * p.read : baseStaticPrefix * p.w1h) +
+          (2500 + clearRehydrateTokens) * p.w1h +
+          600 * p.out) / 1e6;
+      const clearTotalUSD = clearTurn1USD + Math.max(0, nSteps - 1) * ((clearWorkingCtx * p.read + 600 * p.out) / 1e6);
+
+      const compactUpfrontUSD =
+        ((isWarm ? currentContext * p.read : currentContext * p.w1h) +
+          compactSummaryOutTokens * p.out +
+          compactNewCachedCtx * p.w1h) / 1e6;
+      const compactTotalUSD = compactUpfrontUSD + nSteps * ((compactNewCachedCtx * p.read + 600 * p.out) / 1e6);
+
+      const actionCosts = [
+        { id: 'KEEP', label: isWarm ? 'Keep Typing (0.1x Hit)' : 'Resume Cold (2.0x Hit)', total: keepTotalUSD, turn1: keepTurn1USD },
+        { id: 'CLEAR', label: '/clear (Fresh Thread)', total: clearTotalUSD, turn1: clearTurn1USD },
+        { id: 'COMPACT', label: '/compact (2.0x Rewrite)', total: compactTotalUSD, turn1: compactUpfrontUSD },
+      ];
+      let actionWinner = actionCosts.reduce((best, cur) => (cur.total < best.total ? cur : best), actionCosts[0]).id;
+      if (isSame && isWarm && currentContext < 120000 && clearTotalUSD <= keepTotalUSD && keepTotalUSD - clearTotalUSD < 0.05) {
+        actionWinner = 'KEEP';
+      }
+
+      let actionNote = '';
+      if (actionWinner === 'KEEP') {
+        actionNote = `Warm 0.1x reads cost ${fmtUSD((currentContext * p.read) / 1e6, 3)}/step. Running /compact here costs ${fmtUSD(compactUpfrontUSD)} upfront (${fmtTok(compactSummaryOutTokens)} summary output + 2.0x write on ${fmtTok(compactNewCachedCtx)}).`;
+      } else if (actionWinner === 'CLEAR') {
+        const vsKeep = keepTotalUSD - clearTotalUSD;
+        const vsCompact = compactTotalUSD - clearTotalUSD;
+        actionNote = `/clear resets context to ~${fmtTok(clearWorkingCtx)} while preserving the ${fmtTok(baseStaticPrefix)} system prefix, saving ${fmtUSD(Math.max(0, vsKeep))} vs keeping typing and ${fmtUSD(Math.max(0, vsCompact))} vs /compact over ${nSteps} calls.`;
+      } else {
+        actionNote = `Over a ${nSteps}-step run on the same feature, /compact (${fmtUSD(compactUpfrontUSD)} upfront) amortizes below uncompacted ${fmtTok(currentContext)} reads (${fmtUSD(keepTotalUSD)}), though /clear (${fmtUSD(clearTotalUSD)}) remains cleaner if you commit first.`;
+      }
+
+      const singlePingUSD = (currentContext * p.read + 5 * p.out) / 1e6;
+      const coldRewriteUSD = (currentContext * p.w1h) / 1e6;
+      const pingsNeeded = away < 60 ? 0 : Math.max(1, Math.floor(away / 50));
+      const totalPingUSD = pingsNeeded * singlePingUSD;
+      const breakEvenPings = singlePingUSD > 0 ? Math.floor(coldRewriteUSD / singlePingUSD) : 0;
+      const breakEvenMin = breakEvenPings * 50;
+
+      let pingVerdict = 'SKIP_PING';
+      let pingBadgeText = 'No Ping Needed';
+      let pingNote = '';
+      let pingSavingsUSD = 0;
+
+      if (!isWarm) {
+        pingVerdict = 'ALREADY_COLD';
+        pingBadgeText = 'Cache Already Expired';
+        pingNote = `1h TTL already expired (${ageMin}m idle). A ping now would trigger a full 2.0x cold write (${fmtUSD(coldRewriteUSD)}). Wait until you return or start a new session.`;
+      } else if (away < 60 && away * 60 < ttlRemainingSec) {
+        pingVerdict = 'STILL_WARM';
+        pingBadgeText = 'Covered by Current 1h TTL';
+        pingNote = `${Math.ceil(ttlRemainingSec / 60)}m left on the current 1h TTL covers a ${away}m break with 0 pings ($0.00).`;
+      } else {
+        const actualPings = Math.max(1, Math.ceil((away - Math.floor(ttlRemainingSec / 60) + 10) / 50));
+        const actualPingCost = actualPings * singlePingUSD;
+        pingSavingsUSD = coldRewriteUSD - actualPingCost;
+        if (pingSavingsUSD > 0.01 && currentContext >= 40000) {
+          pingVerdict = 'PING_WINS';
+          pingBadgeText = `Ping Saves ${fmtUSD(pingSavingsUSD)}`;
+          pingNote = `${actualPings} keep-alive ping${actualPings > 1 ? 's' : ''} (${fmtUSD(singlePingUSD, 3)} each = ${fmtUSD(actualPingCost, 3)}) keeps ${fmtTok(currentContext)} warm for ${away}m, avoiding a ${fmtUSD(coldRewriteUSD)} cold 2.0x rewrite on return. Break-even is ${breakEvenPings} pings (~${(breakEvenMin / 60).toFixed(1)}h).`;
+        } else {
+          pingVerdict = 'LET_EXPIRE';
+          pingBadgeText = 'Let Cache Expire';
+          pingNote = `For ${away}m away (${actualPings} pings = ${fmtUSD(actualPingCost)}), letting ${fmtTok(currentContext)} expire (${fmtUSD(coldRewriteUSD)} rewrite) is cheaper. Break-even is ~${(breakEvenMin / 60).toFixed(1)}h.`;
+        }
+      }
+
+      const shownPings = !isWarm
+        ? pingsNeeded
+        : (away < 60 && away * 60 < ttlRemainingSec)
+          ? 0
+          : Math.max(1, Math.ceil((away - Math.floor(ttlRemainingSec / 60) + 10) / 50));
+      const shownPingTotalUSD = shownPings * singlePingUSD;
+
+      return {
+        p,
+        nSteps,
+        away,
+        isSame,
+        isWarm,
+        currentContext,
+        baseStaticPrefix,
+        newSessionStartCtx,
+        savedCtxPerStep,
+        sameReadTokens,
+        newReadTokens,
+        savedReadTokens,
+        savedReadUSD,
+        sameTotalUSD,
+        newTotalUSD,
+        splitSavingsUSD,
+        splitWinner,
+        splitReason,
+        handoffCmd: `claude --resume ${shortId}  # summarize state, then open fresh claude session`,
+        keepTurn1USD,
+        keepTotalUSD,
+        clearTurn1USD,
+        clearTotalUSD,
+        compactUpfrontUSD,
+        compactTotalUSD,
+        compactNewCachedCtx,
+        clearWorkingCtx,
+        actionWinner,
+        actionNote,
+        singlePingUSD,
+        coldRewriteUSD,
+        shownPings,
+        shownPingTotalUSD,
+        pingVerdict,
+        pingBadgeText,
+        pingNote,
+        breakEvenPings,
+        breakEvenMin,
+        loopCommand: `/loop 50m Reply with only the word OK. Do not call any tools or read any files.`,
+        wakeupCommand: `Call ScheduleWakeup with delaySeconds: 3000 and noop: true to keep this session warm while I step away.`,
+      };
+    }
+
+    function buildSimulatorMarkup(mountPrefix, targetMeta) {
+      const sim = runSimulation({
+        ...targetMeta,
+        steps: state.sim.steps,
+        taskType: state.sim.taskType,
+        awayMin: state.sim.awayMin,
+      });
+
+      const maxSplitCost = Math.max(sim.sameTotalUSD, sim.newTotalUSD, 0.001);
+      const sameBarPct = Math.min(100, Math.round((sim.sameTotalUSD / maxSplitCost) * 100));
+      const newBarPct = Math.min(100, Math.round((sim.newTotalUSD / maxSplitCost) * 100));
+
+      const maxActCost = Math.max(sim.keepTotalUSD, sim.clearTotalUSD, sim.compactTotalUSD, 0.001);
+      const keepBarPct = Math.min(100, Math.round((sim.keepTotalUSD / maxActCost) * 100));
+      const clearBarPct = Math.min(100, Math.round((sim.clearTotalUSD / maxActCost) * 100));
+      const compactBarPct = Math.min(100, Math.round((sim.compactTotalUSD / maxActCost) * 100));
+
+      const maxPingCost = Math.max(sim.shownPingTotalUSD, sim.coldRewriteUSD, 0.001);
+      const pingBarPct = Math.min(100, Math.round((sim.shownPingTotalUSD / maxPingCost) * 100));
+      const expireBarPct = Math.min(100, Math.round((sim.coldRewriteUSD / maxPingCost) * 100));
+
+      const stepsId = `${mountPrefix}-steps-slider`;
+      const awayId = `${mountPrefix}-away-input`;
+      const radioName = `${mountPrefix}-task-type`;
+
+      const stepPresets = [15, 30, 45, 75, 100];
+      const awayPresets = [45, 90, 180, 360];
+
+      const actionWinnerLabel =
+        sim.actionWinner === 'KEEP' ? 'Keep Typing' : sim.actionWinner === 'CLEAR' ? '/clear' : '/compact';
+
+      return `
+        <div class="sim-panel" data-sim-root="${esc(mountPrefix)}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="badge badge-cyan mono">Cost Comparison</span>
+              <span style="font-size: 0.88rem; font-weight: 650; color: var(--text-primary);">Which Option Is Cheaper?</span>
+            </div>
+            <div class="mono text-muted" style="font-size: 0.72rem;">
+              Ctx: <strong style="color: var(--text-primary);">${fmtTok(sim.currentContext)}</strong>
+              &middot; Prefix: <strong style="color: var(--text-primary);">${fmtTok(sim.baseStaticPrefix)}</strong>
+              &middot; Model: <strong style="color: var(--text-primary);">${esc(targetMeta.model)}</strong>
+              &middot; 1h TTL: <strong class="${sim.isWarm ? 'text-emerald' : 'text-amber'}">${sim.isWarm ? `${Math.ceil(targetMeta.ttlRemainingSec / 60)}m warm` : `cold (${targetMeta.ageMin}m)`}</strong>
+            </div>
+          </div>
+
+          <div class="sim-controls-grid">
+            <div class="sim-control-block">
+              <div class="sim-control-label">
+                <label for="${stepsId}">Expected Tool Calls for Next Task</label>
+                <span class="sim-readout-pill" data-role="steps-readout">${sim.nSteps} steps</span>
+              </div>
+              <input
+                type="range"
+                id="${stepsId}"
+                data-sim-steps
+                min="5"
+                max="100"
+                step="1"
+                value="${sim.nSteps}"
+                aria-valuetext="${sim.nSteps} tool calls"
+              >
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.4rem;">
+                <span class="mono text-muted" style="font-size: 0.68rem;">5</span>
+                <div class="preset-chips" role="group" aria-label="Step presets">
+                  ${stepPresets.map(v => `
+                    <button type="button" class="preset-chip" data-step-preset="${v}" aria-pressed="${sim.nSteps === v}">${v}</button>
+                  `).join('')}
+                </div>
+                <span class="mono text-muted" style="font-size: 0.68rem;">100</span>
+              </div>
+            </div>
+
+            <div class="sim-control-block">
+              <span class="sim-control-label" id="${mountPrefix}-scope-lbl">Next Task Scope</span>
+              <div class="segmented-toggle" role="radiogroup" aria-labelledby="${mountPrefix}-scope-lbl">
+                <label class="segmented-option">
+                  <input type="radio" name="${radioName}" value="same" data-sim-task ${sim.isSame ? 'checked' : ''}>
+                  <span class="seg-title">Same Feature</span>
+                  <span class="seg-sub">+12.5k handoff</span>
+                </label>
+                <label class="segmented-option">
+                  <input type="radio" name="${radioName}" value="unrelated" data-sim-task ${!sim.isSame ? 'checked' : ''}>
+                  <span class="seg-title">New Unrelated Feature</span>
+                  <span class="seg-sub">+2.5k fresh prompt</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-section-card">
+            <div class="sim-card-head">
+              <div class="sim-card-title">
+                <span>Stay in Session vs. Start New Session (<code>ccd</code> / <code>/clear</code>)</span>
+              </div>
+              <span class="winner-badge">
+                Winner: ${sim.splitWinner === 'NEW' ? `New Session (saves ${fmtUSD(Math.max(0, sim.splitSavingsUSD))})` : 'Stay in Session'}
+              </span>
+            </div>
+
+            <div class="versus-grid-2">
+              <div class="option-box" data-winner="${sim.splitWinner === 'SAME'}">
+                <div class="opt-top">
+                  <div>
+                    <div class="opt-name">Stay in Same Session</div>
+                    <div class="opt-meta">${fmtTok(sim.currentContext)}/step &times; ${sim.nSteps} calls = ${fmtTok(sim.sameReadTokens)} rd</div>
+                  </div>
+                  ${sim.splitWinner === 'SAME' ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.sameTotalUSD)}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${sameBarPct}; --bar-color: ${sim.splitWinner === 'SAME' ? 'var(--accent-emerald)' : 'var(--accent-amber)'};"></div>
+                </div>
+                <div class="opt-meta">
+                  ${sim.isWarm ? '0.1x warm cache read on turn 1' : `Includes ${fmtUSD((sim.currentContext * sim.p.w1h) / 1e6)} cold 2.0x write on turn 1`}
+                </div>
+              </div>
+
+              <div class="option-box" data-winner="${sim.splitWinner === 'NEW'}">
+                <div class="opt-top">
+                  <div>
+                    <div class="opt-name">Start New Session (<code>ccd</code> / <code>/clear</code>)</div>
+                    <div class="opt-meta">${fmtTok(sim.newSessionStartCtx)}/step &times; ${sim.nSteps} calls = ${fmtTok(sim.newReadTokens)} rd</div>
+                  </div>
+                  ${sim.splitWinner === 'NEW' ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;">
+                  <div class="opt-price">${fmtUSD(sim.newTotalUSD)}</div>
+                  ${sim.savedReadTokens > 0 ? `<span class="mono text-emerald" style="font-size: 0.74rem; font-weight: 640;">-${fmtTok(sim.savedReadTokens)} tok (${sim.splitSavingsUSD >= 0 ? 'saves ' + fmtUSD(sim.splitSavingsUSD) : fmtUSD(Math.abs(sim.splitSavingsUSD)) + ' more'})</span>` : ''}
+                </div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${newBarPct}; --bar-color: ${sim.splitWinner === 'NEW' ? 'var(--accent-emerald)' : 'var(--accent-indigo)'};"></div>
+                </div>
+                <div class="opt-meta">
+                  ${fmtTok(sim.baseStaticPrefix)} warm prefix + ${fmtTok(sim.isSame ? 12500 : 2500)} ${sim.isSame ? 'handoff summary' : 'task prompt'}
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-summary-note">${esc(sim.splitReason)}</div>
+            ${sim.splitWinner === 'NEW' ? `
+              <div class="cmd-row">
+                <code>${esc(sim.handoffCmd)}</code>
+                <button type="button" class="btn" data-copy-cmd="${esc(`claude --resume ${targetMeta.sessionId || targetMeta.shortId}`)}" style="padding: 0.24rem 0.55rem; font-size: 0.72rem;">Copy</button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="sim-section-card">
+            <div class="sim-card-head">
+              <div class="sim-card-title">
+                <span>Keep Typing vs. <code>/clear</code> vs. <code>/compact</code> (${sim.nSteps}-step total)</span>
+              </div>
+              <span class="winner-badge">
+                Winner: ${esc(actionWinnerLabel)}
+              </span>
+            </div>
+
+            <div class="versus-grid-3">
+              <div class="option-box" data-winner="${sim.actionWinner === 'KEEP'}">
+                <div class="opt-top">
+                  <div class="opt-name">${sim.isWarm ? 'Keep Typing (0.1x)' : 'Keep Typing (Cold)'}</div>
+                  ${sim.actionWinner === 'KEEP' ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.keepTotalUSD)}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${keepBarPct}; --bar-color: ${sim.actionWinner === 'KEEP' ? 'var(--accent-emerald)' : 'var(--accent-cyan)'};"></div>
+                </div>
+                <div class="opt-meta">Turn 1: ${fmtUSD(sim.keepTurn1USD, 'auto')} &middot; ${fmtTok(sim.currentContext)}/step</div>
+              </div>
+
+              <div class="option-box" data-winner="${sim.actionWinner === 'CLEAR'}">
+                <div class="opt-top">
+                  <div class="opt-name"><code>/clear</code></div>
+                  ${sim.actionWinner === 'CLEAR' ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.clearTotalUSD)}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${clearBarPct}; --bar-color: ${sim.actionWinner === 'CLEAR' ? 'var(--accent-emerald)' : 'var(--accent-indigo)'};"></div>
+                </div>
+                <div class="opt-meta">Turn 1: ${fmtUSD(sim.clearTurn1USD, 'auto')} &middot; ~${fmtTok(sim.clearWorkingCtx)}/step</div>
+              </div>
+
+              <div class="option-box" data-winner="${sim.actionWinner === 'COMPACT'}" data-trap="${sim.actionWinner !== 'COMPACT'}">
+                <div class="opt-top">
+                  <div class="opt-name"><code>/compact</code></div>
+                  ${sim.actionWinner === 'COMPACT'
+                    ? '<span class="badge badge-emerald">Best</span>'
+                    : '<span class="badge badge-crimson">2.0x Rewrite</span>'}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.compactTotalUSD)}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${compactBarPct}; --bar-color: ${sim.actionWinner === 'COMPACT' ? 'var(--accent-emerald)' : 'var(--accent-crimson)'};"></div>
+                </div>
+                <div class="opt-meta">Upfront: ${fmtUSD(sim.compactUpfrontUSD)} (3.5k out + ${fmtTok(sim.compactNewCachedCtx)} 1h write)</div>
+              </div>
+            </div>
+
+            <div class="sim-summary-note">${esc(sim.actionNote)}</div>
+          </div>
+
+          <div class="sim-section-card">
+            <div class="sim-card-head">
+              <div class="sim-card-title">
+                <span>1-Hour Keep-Alive Ping Calculator (50m <code>/loop</code>)</span>
+              </div>
+              <span class="badge ${sim.pingVerdict === 'PING_WINS' || sim.pingVerdict === 'STILL_WARM' ? 'badge-emerald' : 'badge-amber'}">
+                ${esc(sim.pingBadgeText)}
+              </span>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.55rem 0.75rem; background: var(--bg-elev-2); border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
+              <label for="${awayId}" style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">
+                Minutes away from keyboard:
+              </label>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem;">
+                <div class="preset-chips" role="group" aria-label="Away duration presets">
+                  ${awayPresets.map(m => `
+                    <button type="button" class="preset-chip" data-away-preset="${m}" aria-pressed="${sim.away === m}">${m}m</button>
+                  `).join('')}
+                </div>
+                <div style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                  <input
+                    type="number"
+                    id="${awayId}"
+                    data-sim-away
+                    class="input-control mono"
+                    min="5"
+                    max="2880"
+                    step="5"
+                    value="${sim.away}"
+                    style="inline-size: 84px; padding-inline-start: 0.55rem; text-align: end;"
+                  >
+                  <span class="mono text-muted" style="font-size: 0.74rem;">min</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="versus-grid-2">
+              <div class="option-box" data-winner="${sim.pingVerdict === 'PING_WINS' || sim.pingVerdict === 'STILL_WARM'}">
+                <div class="opt-top">
+                  <div>
+                    <div class="opt-name">50-Minute <code>/loop</code> Keep-Alive</div>
+                    <div class="opt-meta">${sim.shownPings} ping${sim.shownPings === 1 ? '' : 's'} &times; ${fmtUSD(sim.singlePingUSD, 3)} (0.1x read + 5 out tok)</div>
+                  </div>
+                  ${(sim.pingVerdict === 'PING_WINS' || sim.pingVerdict === 'STILL_WARM') ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.shownPingTotalUSD, 'auto')}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${pingBarPct}; --bar-color: var(--accent-emerald);"></div>
+                </div>
+                <div class="opt-meta">Break-even: up to ${sim.breakEvenPings} pings (~${(sim.breakEvenMin / 60).toFixed(1)}h away)</div>
+              </div>
+
+              <div class="option-box" data-winner="${sim.pingVerdict === 'LET_EXPIRE' || sim.pingVerdict === 'ALREADY_COLD'}">
+                <div class="opt-top">
+                  <div>
+                    <div class="opt-name">Let 1h Cache Expire</div>
+                    <div class="opt-meta">Full 2.0x cold 1h write on ${fmtTok(sim.currentContext)} when resuming</div>
+                  </div>
+                  ${sim.pingVerdict === 'LET_EXPIRE' ? '<span class="badge badge-emerald">Best</span>' : ''}
+                </div>
+                <div class="opt-price">${fmtUSD(sim.coldRewriteUSD)}</div>
+                <div class="opt-bar-track">
+                  <div class="opt-bar-fill" style="--bar-pct: ${expireBarPct}; --bar-color: var(--accent-amber);"></div>
+                </div>
+                <div class="opt-meta">20x more expensive per token than a single warm read</div>
+              </div>
+            </div>
+
+            <div class="sim-summary-note">${esc(sim.pingNote)}</div>
+
+            <div class="cmd-row">
+              <code>${esc(sim.loopCommand)}</code>
+              <button type="button" class="btn" data-copy-cmd="${esc(sim.loopCommand)}" style="padding: 0.24rem 0.55rem; font-size: 0.72rem;">Copy /loop</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindSimulatorEvents(container, rerenderAllSimulators) {
+      if (!container) return;
+      const slider = container.querySelector('[data-sim-steps]');
+      if (slider) {
+        syncSliderValue(slider, 'tool calls');
+        slider.addEventListener('input', () => {
+          state.sim.steps = Number(slider.value) || 45;
+          syncSliderValue(slider, 'tool calls');
+          rerenderAllSimulators(slider.id);
+        });
+      }
+
+      container.querySelectorAll('[data-step-preset]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.sim.steps = Number(btn.dataset.stepPreset) || 45;
+          rerenderAllSimulators();
+        });
+      });
+
+      container.querySelectorAll('[data-sim-task]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.checked) {
+            state.sim.taskType = radio.value === 'same' ? 'same' : 'unrelated';
+            rerenderAllSimulators();
+          }
+        });
+      });
+
+      const awayInput = container.querySelector('[data-sim-away]');
+      if (awayInput) {
+        awayInput.addEventListener('change', () => {
+          state.sim.awayMin = Math.max(5, Math.min(2880, Number(awayInput.value) || 90));
+          rerenderAllSimulators(awayInput.id);
+        });
+        awayInput.addEventListener('input', () => {
+          const val = Number(awayInput.value);
+          if (val >= 5 && val <= 2880) {
+            state.sim.awayMin = val;
+            rerenderAllSimulators(awayInput.id);
+          }
+        });
+      }
+
+      container.querySelectorAll('[data-away-preset]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.sim.awayMin = Number(btn.dataset.awayPreset) || 90;
+          rerenderAllSimulators();
+        });
+      });
+
+      container.querySelectorAll('[data-copy-cmd]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          copyText(btn.dataset.copyCmd, 'Command copied');
+        });
+      });
+    }
+
+    function getSessionTargetMeta(session) {
+      if (!session) {
+        return {
+          sessionId: 'custom',
+          shortId: 'custom',
+          currentContext: state.sim.customCtx,
+          startCacheRead: 42000,
+          isWarm: state.sim.customWarm,
+          ageMin: state.sim.customWarm ? 8 : 75,
+          ttlRemainingSec: state.sim.customWarm ? 3120 : 0,
+          model: state.sim.customModel,
+        };
+      }
+      const lastTurn = session.turns?.[session.turns.length - 1];
+      return {
+        sessionId: session.sessionId,
+        shortId: session.shortId,
+        currentContext: session.currentContext,
+        startCacheRead: session.startCacheRead,
+        isWarm: session.isWarm,
+        ageMin: session.ageMin,
+        ttlRemainingSec: session.ttlRemainingSec,
+        model: lastTurn?.model || session.models?.[0] || 'opus-5',
+      };
+    }
+
+    function renderAllOpenSimulators(preserveFocusId = null) {
+      let selectionStart = null;
+      if (preserveFocusId) {
+        const active = document.getElementById(preserveFocusId);
+        if (active && typeof active.selectionStart === 'number') {
+          selectionStart = active.selectionStart;
+        }
+      }
+
+      const modal = document.getElementById('session-modal');
+      if (modal?.open && state.selectedSessionId) {
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (s) {
+          const mount = document.getElementById('modal-simulator-mount');
+          mount.innerHTML = buildSimulatorMarkup('modal', getSessionTargetMeta(s));
+          bindSimulatorEvents(mount, renderAllOpenSimulators);
+        }
+      }
+
+      const drawer = document.getElementById('sim-drawer');
+      if (drawer?.open) {
+        const isCustom = state.sim.drawerTargetId === '__custom__';
+        const customControls = document.getElementById('drawer-custom-controls');
+        customControls.hidden = !isCustom;
+
+        const targetSession = isCustom
+          ? null
+          : state.sessions.find(x => x.sessionId === state.sim.drawerTargetId) || state.sessions[0] || null;
+
+        const metaEl = document.getElementById('drawer-target-meta');
+        if (targetSession) {
+          metaEl.textContent = `${targetSession.appName} / ${targetSession.shortId} (${fmtTok(targetSession.currentContext)})`;
+        } else {
+          metaEl.textContent = `Custom (${fmtTok(state.sim.customCtx)} / ${state.sim.customModel})`;
+        }
+
+        const mount = document.getElementById('drawer-simulator-mount');
+        mount.innerHTML = buildSimulatorMarkup('drawer', getSessionTargetMeta(targetSession));
+        bindSimulatorEvents(mount, renderAllOpenSimulators);
+      }
+
+      if (preserveFocusId) {
+        const restored = document.getElementById(preserveFocusId);
+        if (restored) {
+          restored.focus({ preventScroll: true });
+          if (selectionStart !== null && typeof restored.setSelectionRange === 'function') {
+            try { restored.setSelectionRange(selectionStart, selectionStart); } catch {}
+          }
+        }
+      }
+    }
+
+    let chartHitRegions = [];
+
+    function renderTimelineChart(session, highlightIdx = -1) {
+      const canvas = document.getElementById('timeline-canvas');
+      const stage = document.getElementById('chart-stage');
+      if (!canvas || !stage || !session?.turns?.length) return;
+
+      const rect = stage.getBoundingClientRect();
+      const width = Math.max(320, rect.width || 800);
+      const height = Math.max(210, rect.height || 250);
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+
+      const turns = session.turns;
+      const n = turns.length;
+
+      const padL = 52;
+      const padR = 16;
+      const padT = 18;
+      const padB = 28;
+      const plotW = Math.max(80, width - padL - padR);
+      const plotH = Math.max(80, height - padT - padB);
+
+      let maxVal = 50000;
+      for (let i = 0; i < n; i++) {
+        const t = turns[i];
+        if (t.rd > maxVal) maxVal = t.rd;
+        if (t.cr > maxVal) maxVal = t.cr;
+        if (t.rd + t.cr > maxVal) maxVal = t.rd + t.cr;
+      }
+      maxVal = Math.ceil(maxVal * 1.08 / 25000) * 25000;
+
+      const xFor = i => (n === 1 ? padL + plotW / 2 : padL + (i / (n - 1)) * plotW);
+      const yFor = val => padT + plotH - (Math.min(maxVal, Math.max(0, val)) / maxVal) * plotH;
+
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      const gridSteps = 4;
+      for (let g = 0; g <= gridSteps; g++) {
+        const val = (maxVal / gridSteps) * g;
+        const y = yFor(val);
+        ctx.strokeStyle = g === 0 ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(width - padR, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(fmtTok(val), padL - 8, y);
+      }
+
+      if (maxVal >= 40000) {
+        const y25 = yFor(25000);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.32)';
+        ctx.beginPath();
+        ctx.moveTo(padL, y25);
+        ctx.lineTo(width - padR, y25);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const stride = Math.max(1, Math.floor(n / 900));
+      const areaGrad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+      areaGrad.addColorStop(0, 'rgba(34, 211, 238, 0.30)');
+      areaGrad.addColorStop(0.75, 'rgba(110, 123, 242, 0.08)');
+      areaGrad.addColorStop(1, 'rgba(110, 123, 242, 0.0)');
+
+      ctx.beginPath();
+      ctx.moveTo(xFor(0), padT + plotH);
+      for (let i = 0; i < n; i += stride) {
+        ctx.lineTo(xFor(i), yFor(turns[i].rd));
+      }
+      if ((n - 1) % stride !== 0) {
+        ctx.lineTo(xFor(n - 1), yFor(turns[n - 1].rd));
+      }
+      ctx.lineTo(xFor(n - 1), padT + plotH);
+      ctx.closePath();
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i < n; i += stride) {
+        const x = xFor(i);
+        const y = yFor(turns[i].rd);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      if ((n - 1) % stride !== 0) {
+        ctx.lineTo(xFor(n - 1), yFor(turns[n - 1].rd));
+      }
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      const rawSlotW = n > 1 ? plotW / n : 18;
+      const normalBarW = Math.max(1.5, Math.min(12, rawSlotW * 0.65));
+      const spikeBarW = Math.max(3.5, Math.min(14, rawSlotW * 0.78));
+
+      chartHitRegions = new Array(n);
+      for (let i = 0; i < n; i++) {
+        chartHitRegions[i] = { x: xFor(i), idx: i };
+      }
+
+      if (n <= 800) {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.42)';
+        for (let i = 0; i < n; i++) {
+          const t = turns[i];
+          if (t.cr <= 0 || (i > 0 && t.cr > 25000)) continue;
+          const x = xFor(i);
+          const y = yFor(t.cr);
+          const h = Math.max(2, padT + plotH - y);
+          ctx.fillRect(x - normalBarW / 2, padT + plotH - h, normalBarW, h);
+        }
+      } else {
+        const cols = Math.floor(plotW);
+        const colMax = new Float64Array(cols);
+        for (let i = 0; i < n; i++) {
+          const t = turns[i];
+          if (t.cr <= 0 || (i > 0 && t.cr > 25000)) continue;
+          const c = Math.min(cols - 1, Math.max(0, Math.floor(((i / (n - 1)) * (cols - 1)))));
+          if (t.cr > colMax[c]) colMax[c] = t.cr;
+        }
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.38)';
+        for (let c = 0; c < cols; c++) {
+          if (colMax[c] <= 0) continue;
+          const y = yFor(colMax[c]);
+          const h = Math.max(1.5, padT + plotH - y);
+          ctx.fillRect(padL + c, padT + plotH - h, 1.2, h);
+        }
+      }
+
+      for (let i = 1; i < n; i++) {
+        const t = turns[i];
+        if (t.cr <= 25000) continue;
+        const x = xFor(i);
+        const y = yFor(t.cr);
+        const h = Math.max(6, padT + plotH - y);
+
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.16)';
+        ctx.fillRect(x - spikeBarW, padT, spikeBarW * 2, plotH);
+
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(x - spikeBarW / 2, padT + plotH - h, spikeBarW, h);
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#fda4af';
+        ctx.fill();
+        ctx.strokeStyle = '#881337';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+      const xTicks = Math.min(n, 6);
+      for (let k = 0; k < xTicks; k++) {
+        const idx = xTicks === 1 ? 0 : Math.round((k / (xTicks - 1)) * (n - 1));
+        const x = xFor(idx);
+        ctx.textAlign = k === 0 ? 'left' : k === xTicks - 1 ? 'right' : 'center';
+        const t = turns[idx];
+        ctx.fillText(`#${t.idx}${t.timeStr ? ' ' + t.timeStr.slice(0, 5) : ''}`, x, height - 9);
+      }
+
+      if (highlightIdx >= 0 && highlightIdx < n) {
+        const ht = turns[highlightIdx];
+        const hx = xFor(highlightIdx);
+        const hy = yFor(ht.rd);
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(hx, padT);
+        ctx.lineTo(hx, padT + plotH);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(hx, hy, 4.8, 0, Math.PI * 2);
+        ctx.fillStyle = ht.cr > 25000 && highlightIdx > 0 ? '#f43f5e' : '#22d3ee';
+        ctx.fill();
+        ctx.strokeStyle = '#08090d';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function updateChartTooltip(session, turnIdx) {
+      const tooltip = document.getElementById('chart-tooltip');
+      const stage = document.getElementById('chart-stage');
+      if (!tooltip || !stage || turnIdx < 0 || !session?.turns?.[turnIdx]) {
+        if (tooltip) tooltip.hidden = true;
+        return;
+      }
+
+      const t = session.turns[turnIdx];
+      const isSpike = turnIdx > 0 && t.cr > 25000;
+      const stageW = stage.clientWidth || 800;
+      const hitX = chartHitRegions[turnIdx]?.x ?? 60;
+
+      tooltip.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-block-end: 0.3rem;">
+          <span class="mono" style="font-weight: 700; color: var(--text-primary);">Turn #${t.idx}</span>
+          <span class="mono text-muted" style="font-size: 0.69rem;">${esc(t.timeStr || '--:--:--')} &middot; ${esc(t.model)}</span>
+        </div>
+        <div class="mono" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.22rem 0.65rem; font-size: 0.72rem;">
+          <span class="text-muted">Cache Read (rd):</span>
+          <span style="text-align: end; color: #67e8f9; font-weight: 640;">${fmtTok(t.rd)}</span>
+          <span class="text-muted">Cache Write (cr):</span>
+          <span style="text-align: end; color: ${isSpike ? '#fb7185' : 'var(--text-primary)'}; font-weight: ${isSpike ? '700' : '500'};">${fmtTok(t.cr)}</span>
+          <span class="text-muted">Output / Cost:</span>
+          <span style="text-align: end; color: var(--text-primary);">${fmtTok(t.out)} &middot; ${fmtUSD(t.cost, 3)}</span>
+          <span class="text-muted">Idle Gap:</span>
+          <span style="text-align: end; color: ${t.gapSec >= 3550 ? '#fbbf24' : 'var(--text-secondary)'};">${t.idx === 1 ? 'initial turn' : fmtDurationSec(t.gapSec)}</span>
+        </div>
+        ${isSpike || t.breakCause ? `
+          <div class="tt-break-box">
+            <div style="font-weight: 700; margin-block-end: 2px;">Cache Break (+${fmtTok(t.cr)} write)</div>
+            <div>${esc(t.breakCause || 'Cache creation spike > 25k tokens')}</div>
+          </div>
+        ` : (t.idx === 1 && t.cr > 25000 ? `
+          <div style="margin-block-start: 0.35rem; font-size: 0.7rem; color: var(--text-muted);">
+            Initial turn 1 cache warmup (${fmtTok(t.cr)} written).
+          </div>
+        ` : '')}
+      `;
+
+      tooltip.hidden = false;
+      const ttWidth = tooltip.offsetWidth || 260;
+      let tx = hitX + 14;
+      if (tx + ttWidth > stageW - 10) {
+        tx = Math.max(10, hitX - ttWidth - 14);
+      }
+      tooltip.style.setProperty('--tt-x', `${Math.round(tx)}px`);
+    }
+
+    function setupTimelineInteractions() {
+      const canvas = document.getElementById('timeline-canvas');
+      const stage = document.getElementById('chart-stage');
+      if (!canvas || !stage) return;
+
+      const findNearestTurn = clientX => {
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (!s || !s.turns.length || !chartHitRegions.length) return -1;
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+
+        for (let i = 1; i < s.turns.length; i++) {
+          if (s.turns[i].cr > 25000 && Math.abs(chartHitRegions[i].x - x) <= 6.5) {
+            return i;
+          }
+        }
+
+        let bestIdx = 0;
+        let bestDist = Infinity;
+        let lo = 0;
+        let hi = chartHitRegions.length - 1;
+        while (lo <= hi) {
+          const mid = (lo + hi) >> 1;
+          const dist = Math.abs(chartHitRegions[mid].x - x);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestIdx = mid;
+          }
+          if (chartHitRegions[mid].x < x) lo = mid + 1;
+          else hi = mid - 1;
+        }
+        return bestIdx;
+      };
+
+      canvas.addEventListener('pointermove', e => {
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (!s) return;
+        const idx = findNearestTurn(e.clientX);
+        if (idx !== state.chartHoverIdx) {
+          state.chartHoverIdx = idx;
+          renderTimelineChart(s, idx);
+          updateChartTooltip(s, idx);
+        }
+      });
+
+      canvas.addEventListener('pointerleave', () => {
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        state.chartHoverIdx = -1;
+        if (s) renderTimelineChart(s, -1);
+        document.getElementById('chart-tooltip').hidden = true;
+      });
+
+      canvas.addEventListener('keydown', e => {
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (!s || !s.turns.length) return;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const cur = state.chartHoverIdx < 0 ? 0 : state.chartHoverIdx;
+          const next = e.key === 'ArrowRight'
+            ? Math.min(s.turns.length - 1, cur + 1)
+            : Math.max(0, cur - 1);
+          state.chartHoverIdx = next;
+          renderTimelineChart(s, next);
+          updateChartTooltip(s, next);
+        }
+      });
+
+      const ro = new ResizeObserver(() => {
+        const modal = document.getElementById('session-modal');
+        if (!modal?.open || !state.selectedSessionId) return;
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (s) renderTimelineChart(s, state.chartHoverIdx);
+      });
+      ro.observe(stage);
+    }
+
+    function renderQuotaBanner() {
+      const block = state.activeBlock;
+      const banner = document.getElementById('quota-banner');
+      const statusPill = document.getElementById('quota-status-pill');
+      const statusText = document.getElementById('quota-status-text');
+      const useItPill = document.getElementById('use-it-indicator');
+      const rangeEl = document.getElementById('quota-window-range');
+      const countdownEl = document.getElementById('quota-countdown');
+      const elapsedEl = document.getElementById('quota-elapsed-label');
+      const spendEl = document.getElementById('quota-spend-val');
+      const progressBar = document.getElementById('quota-progressbar');
+      const fillEl = document.getElementById('quota-fill');
+      const adviceEl = document.getElementById('quota-advice');
+      const mixEl = document.getElementById('quota-token-mix');
+
+      const arcEl = document.getElementById('burn-gauge-arc');
+      const dotEl = document.getElementById('burn-gauge-dot');
+      const tierBadge = document.getElementById('burn-tier-badge');
+      const tpmVal = document.getElementById('gauge-tpm-val');
+      const cphVal = document.getElementById('gauge-cph-val');
+      const projVal = document.getElementById('gauge-proj-val');
+      const totalTokVal = document.getElementById('gauge-total-tok');
+
+      if (!block || !block.active) {
+        banner.dataset.urgent = 'false';
+        statusPill.className = 'status-pill idle';
+        statusText.textContent = 'No Active 5h Block';
+        useItPill.hidden = true;
+        rangeEl.textContent = 'Starts on next message';
+        countdownEl.textContent = '5h 00m available';
+        elapsedEl.textContent = 'Elapsed: 0m / 300m (0%)';
+        spendEl.textContent = '$0.00';
+        progressBar.setAttribute('aria-valuenow', '0');
+        fillEl.style.setProperty('--progress-pct', '0');
+        adviceEl.textContent = 'No turns recorded in the last 5 hours. Your next Claude Code prompt starts a fresh 5-hour window.';
+        mixEl.innerHTML = '';
+
+        arcEl.style.strokeDashoffset = '100';
+        dotEl.setAttribute('cx', '20');
+        dotEl.setAttribute('cy', '100');
+        tierBadge.className = 'badge badge-muted mono';
+        tierBadge.textContent = 'Idle';
+        tpmVal.textContent = '0';
+        cphVal.textContent = '$0.00';
+        projVal.textContent = '$0.00';
+        totalTokVal.textContent = '0';
+        return;
+      }
+
+      const now = Date.now();
+      const startMs = new Date(block.blockStartIso).getTime();
+      const endMs = new Date(block.blockEndIso).getTime();
+      const totalWindowMs = 5 * 3600 * 1000;
+      const elapsedMs = Math.max(0, Math.min(totalWindowMs, now - startMs));
+      const remMs = Math.max(0, endMs - now);
+
+      const elapsedMin = Math.max(1, Math.round(elapsedMs / 60000));
+      const remTotalSec = Math.floor(remMs / 1000);
+      const remH = Math.floor(remTotalSec / 3600);
+      const remM = Math.floor((remTotalSec % 3600) / 60);
+      const remS = remTotalSec % 60;
+      const remMinRounded = Math.ceil(remMs / 60000);
+
+      const progressPct = Math.min(100, Math.max(0, (elapsedMs / totalWindowMs) * 100));
+      const isUrgent = remMs > 0 && remMs < 3600 * 1000;
+
+      banner.dataset.urgent = String(isUrgent);
+      statusPill.className = 'status-pill active';
+      statusText.textContent = 'Active 5h Block';
+      useItPill.hidden = !isUrgent;
+      rangeEl.textContent = `${fmtLocalClock(block.blockStartIso)} - ${fmtLocalClock(block.blockEndIso)}`;
+
+      countdownEl.textContent = remMs <= 0
+        ? 'Resetting...'
+        : `${remH}h ${String(remM).padStart(2, '0')}m ${String(remS).padStart(2, '0')}s left`;
+      elapsedEl.textContent = `Elapsed: ${elapsedMin}m / 300m (${Math.round(progressPct)}%)`;
+      spendEl.textContent = fmtUSD(block.totalCost);
+
+      progressBar.setAttribute('aria-valuenow', String(elapsedMin));
+      fillEl.style.setProperty('--progress-pct', progressPct.toFixed(2));
+
+      if (isUrgent) {
+        adviceEl.textContent = `${remMinRounded}m left before this 5-hour quota window resets. Run pending work now while warm 1h caches are active.`;
+      } else {
+        adviceEl.textContent = block.blockAdvice;
+      }
+
+      mixEl.innerHTML = `
+        <span class="token-mix-item"><span class="dot" style="background:#22d3ee"></span>Read: <strong>${fmtTok(block.cacheReadTokens)}</strong></span>
+        <span class="token-mix-item"><span class="dot" style="background:#f59e0b"></span>Write: <strong>${fmtTok(block.cacheCreateTokens)}</strong></span>
+        <span class="token-mix-item"><span class="dot" style="background:#a78bfa"></span>Out: <strong>${fmtTok(block.outputTokens)}</strong></span>
+        <span class="token-mix-item"><span class="dot" style="background:#94a3b8"></span>In: <strong>${fmtTok(block.inputTokens)}</strong></span>
+      `;
+
+      const tpm = block.tokensPerMin || 0;
+      const cph = block.costPerHour || 0;
+      const projected5hCost = cph * 5;
+      const gaugeNorm = Math.min(100, Math.round((Math.log10(Math.max(100, tpm)) - 2) / 3 * 100));
+      const clampedGauge = tpm === 0 ? 0 : Math.max(4, Math.min(100, gaugeNorm));
+
+      arcEl.style.strokeDashoffset = String(100 - clampedGauge);
+      const angle = Math.PI * (1 - clampedGauge / 100);
+      const cx = 105 + 85 * Math.cos(angle);
+      const cy = 100 - 85 * Math.sin(angle);
+      dotEl.setAttribute('cx', cx.toFixed(1));
+      dotEl.setAttribute('cy', cy.toFixed(1));
+
+      if (cph >= 25 || tpm >= 250000) {
+        tierBadge.className = 'badge badge-crimson mono';
+        tierBadge.textContent = 'High';
+      } else if (cph >= 8 || tpm >= 80000) {
+        tierBadge.className = 'badge badge-amber mono';
+        tierBadge.textContent = 'Moderate';
+      } else {
+        tierBadge.className = 'badge badge-emerald mono';
+        tierBadge.textContent = 'Low';
+      }
+
+      tpmVal.textContent = fmtTok(tpm);
+      cphVal.textContent = fmtUSD(cph);
+      projVal.textContent = fmtUSD(projected5hCost);
+      totalTokVal.textContent = fmtTok(block.totalTokens);
+    }
+
+    function getFilteredSessions() {
+      const q = state.searchQuery.trim().toLowerCase();
+      return state.sessions.filter(s => {
+        if (state.appFilter && s.appName !== state.appFilter) return false;
+        if (state.statusFilter === 'warm' && !s.isWarm) return false;
+        if (state.statusFilter === 'bloated' && s.currentContext < 140000) return false;
+        if (state.statusFilter === 'breaks' && s.cacheBreaksCount === 0 && s.cacheIntegrityPct >= 80) return false;
+        if (q) {
+          const hay = `${s.appName} ${s.title} ${s.shortId} ${s.models.join(' ')}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderKpis(sessions) {
+      const totalCost = sessions.reduce((acc, s) => acc + s.totalCost, 0);
+      const warmSessions = sessions.filter(s => s.isWarm);
+      const totalBreaks = sessions.reduce((acc, s) => acc + s.cacheBreaksCount, 0);
+      const totalWasted = sessions.reduce((acc, s) => acc + s.wastedWriteTokens, 0);
+      const bloated = sessions.filter(s => s.currentContext >= 140000);
+      const avgIntegrity = sessions.length
+        ? Math.round(sessions.reduce((acc, s) => acc + s.cacheIntegrityPct, 0) / sessions.length)
+        : 100;
+
+      let savedByCacheUSD = 0;
+      for (const s of sessions) {
+        const p = getPriceTier(s.models[0] || 'opus-5');
+        savedByCacheUSD += (s.totalRead * Math.max(0, p.in - p.read)) / 1e6;
+      }
+
+      document.getElementById('kpi-sessions-pill').textContent = `${sessions.length} session${sessions.length === 1 ? '' : 's'}`;
+      document.getElementById('kpi-total-cost').textContent = fmtUSD(totalCost);
+      document.getElementById('kpi-cache-saved').textContent = `${fmtUSD(savedByCacheUSD)} saved via warm cache reads`;
+
+      document.getElementById('kpi-warm-count').textContent = String(warmSessions.length);
+      if (warmSessions.length > 0) {
+        const soonest = warmSessions.reduce((a, b) => (a.ttlRemainingSec < b.ttlRemainingSec ? a : b));
+        document.getElementById('kpi-warm-sub').textContent =
+          `Next expiry: ${soonest.appName} (${Math.ceil(soonest.ttlRemainingSec / 60)}m left)`;
+      } else {
+        document.getElementById('kpi-warm-sub').textContent = 'No active 1h caches right now';
+      }
+
+      const intEl = document.getElementById('kpi-integrity');
+      intEl.textContent = `${avgIntegrity}%`;
+      intEl.className = `kpi-value ${avgIntegrity >= 88 ? 'text-emerald' : avgIntegrity >= 75 ? 'text-amber' : 'text-crimson'}`;
+      document.getElementById('kpi-breaks-pill').textContent = `${totalBreaks} break${totalBreaks === 1 ? '' : 's'}`;
+      document.getElementById('kpi-wasted-writes').textContent = `${fmtTok(totalWasted)} wasted cache-write tokens`;
+
+      document.getElementById('kpi-bloated-count').textContent = String(bloated.length);
+      document.getElementById('kpi-bloated-sub').textContent = bloated.length > 0
+        ? `Largest: ${fmtTok(Math.max(...bloated.map(x => x.currentContext)))} active context`
+        : 'All filtered sessions are below 140k';
+    }
+
+    function renderAppsStrip() {
+      const strip = document.getElementById('apps-strip');
+      const select = document.getElementById('app-select');
+
+      const currentVal = state.appFilter;
+      select.innerHTML = `<option value="">All projects (${state.apps.length})</option>` +
+        state.apps.map(a => `<option value="${esc(a.appName)}" ${a.appName === currentVal ? 'selected' : ''}>${esc(a.appName)} (${fmtUSD(a.totalCost)})</option>`).join('');
+
+      if (state.apps.length === 0) {
+        strip.innerHTML = '';
+        return;
+      }
+
+      const allChip = `
+        <button type="button" class="app-chip" data-app-chip="" aria-pressed="${state.appFilter === ''}">
+          <span class="app-chip-top">
+            <span class="app-chip-name">All Projects</span>
+            <span class="mono text-emerald" style="font-size: 0.76rem; font-weight: 650;">${fmtUSD(state.sessions.reduce((s, x) => s + x.totalCost, 0))}</span>
+          </span>
+          <span class="app-chip-meta">${state.sessions.length} sessions &middot; ${state.sessions.filter(x => x.isWarm).length} warm</span>
+        </button>
+      `;
+
+      strip.innerHTML = allChip + state.apps.slice(0, 12).map(a => `
+        <button type="button" class="app-chip" data-app-chip="${esc(a.appName)}" aria-pressed="${state.appFilter === a.appName}">
+          <span class="app-chip-top">
+            <span class="app-chip-name">${esc(a.appName)}</span>
+            <span class="mono text-emerald" style="font-size: 0.76rem; font-weight: 650;">${fmtUSD(a.totalCost)}</span>
+          </span>
+          <span class="app-chip-meta">
+            ${a.sessionsCount} sess &middot; ${a.avgIntegrityPct}% int${a.warmCount ? ` &middot; ${a.warmCount} warm` : ''}
+          </span>
+        </button>
+      `).join('');
+
+      strip.querySelectorAll('[data-app-chip]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.appFilter = btn.dataset.appChip || '';
+          select.value = state.appFilter;
+          refreshDashboardUI();
+        });
+      });
+    }
+
+    function renderSessionsTable(filtered) {
+      const tbody = document.getElementById('sessions-tbody');
+      document.getElementById('visible-count-badge').textContent = String(filtered.length);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 2.6rem 1rem; text-align: center; color: var(--text-muted);">
+              No sessions match the current filters. Try expanding the time window to <strong>7d</strong> or <strong>All</strong>.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        const ctxPct = Math.min(100, Math.round((s.currentContext / 220000) * 100));
+        const ctxColor = s.currentContext >= 200000
+          ? 'var(--accent-crimson)'
+          : s.currentContext >= 140000
+            ? 'var(--accent-amber)'
+            : 'var(--accent-emerald)';
+
+        const intBadgeClass = s.cacheIntegrityPct >= 90
+          ? 'badge-emerald'
+          : s.cacheIntegrityPct >= 75
+            ? 'badge-amber'
+            : 'badge-crimson';
+
+        const ttlMarkup = s.isWarm
+          ? `<span class="badge badge-cyan mono">${Math.ceil(s.ttlRemainingSec / 60)}m left</span>`
+          : `<span class="mono text-muted" style="font-size: 0.73rem;">cold (${fmtRelativeAge(s.ageMin)})</span>`;
+
+        const splitVerdict = s.simulators?.sameVsNewSession?.verdict;
+        const splitMarkup = splitVerdict === 'START_NEW_SESSION'
+          ? `<span class="badge badge-amber">New session (-${fmtUSD(s.simulators.sameVsNewSession.savedDollars50Steps)})</span>`
+          : splitVerdict === 'NEW_SESSION_IF_UNRELATED'
+            ? `<span class="badge badge-muted">Split if new task</span>`
+            : `<span class="badge badge-emerald">Stay inline</span>`;
+
+        const primaryDecision = s.decisions?.[0] || { badge: 'HEALTHY', type: 'healthy' };
+        const decClass = primaryDecision.type === 'critical'
+          ? 'badge-crimson'
+          : primaryDecision.type === 'warning'
+            ? 'badge-amber'
+            : primaryDecision.type === 'info'
+              ? 'badge-cyan'
+              : 'badge-emerald';
+
+        return `
+          <tr data-session-row="${esc(s.sessionId)}" tabindex="0" aria-label="Inspect session ${esc(s.title)}">
+            <th scope="row">
+              <div class="session-cell-top">
+                <span class="app-tag">${esc(s.appName)}</span>
+                <span class="session-title-text" title="${esc(s.title)}">${esc(s.title)}</span>
+              </div>
+              <div class="session-sub-meta">
+                <span>${esc(s.shortId)}</span>
+                <span>&middot;</span>
+                <span>${s.turnsCount} turns</span>
+                <span>&middot;</span>
+                <span>${esc(s.models.join(', '))}</span>
+                <span>&middot;</span>
+                <span>${fmtRelativeAge(s.ageMin)}</span>
+              </div>
+            </th>
+            <td class="num">
+              <div class="ctx-meter">
+                <span class="mono" style="font-size: 0.8rem; font-weight: 650; color: ${ctxColor};">${fmtTok(s.currentContext)}</span>
+                <span class="ctx-bar-bg"><span class="ctx-bar-fill" style="--ctx-pct: ${ctxPct}; --ctx-color: ${ctxColor};"></span></span>
+              </div>
+            </td>
+            <td class="num">
+              <span class="badge ${intBadgeClass} mono">${s.cacheIntegrityPct}%</span>
+              ${s.cacheBreaksCount > 0 ? `<div class="mono text-crimson" style="font-size: 0.67rem; margin-block-start: 2px;">${s.cacheBreaksCount} break${s.cacheBreaksCount > 1 ? 's' : ''}</div>` : ''}
+            </td>
+            <td class="num">${ttlMarkup}</td>
+            <td>${splitMarkup}</td>
+            <td class="num">
+              <span class="mono" style="font-size: 0.84rem; font-weight: 680; color: var(--text-primary);">${fmtUSD(s.totalCost)}</span>
+              <div class="mono text-muted" style="font-size: 0.68rem;">${fmtTok(s.totalRead)} rd</div>
+            </td>
+            <td>
+              <span class="badge ${decClass}">${esc(primaryDecision.badge)}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('[data-session-row]').forEach(row => {
+        const open = () => openSessionModal(row.dataset.sessionRow);
+        row.addEventListener('click', open);
+        row.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+          }
+        });
+      });
+    }
+
+    function renderModalTurnsTable(session) {
+      const tbody = document.getElementById('modal-turns-tbody');
+      const showingEl = document.getElementById('turns-showing-meta');
+      const moreWrap = document.getElementById('turns-load-more-wrap');
+      const moreBtn = document.getElementById('turns-load-more-btn');
+
+      const allTurns = session.turns || [];
+      const filteredTurns = state.turnsFilterBreaksOnly
+        ? allTurns.filter((t, idx) => idx > 0 && t.cr > 25000)
+        : allTurns;
+
+      const slice = filteredTurns.slice(0, state.turnsLogLimit);
+      showingEl.textContent = `Showing ${slice.length} of ${filteredTurns.length} turns`;
+
+      if (slice.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="padding: 1.2rem; text-align: center; color: var(--text-muted);">No mid-session cache breaks (&gt;25k write) recorded in this session.</td></tr>`;
+        moreWrap.hidden = true;
+        return;
+      }
+
+      tbody.innerHTML = slice.map(t => {
+        const isBreak = t.idx > 1 && t.cr > 25000;
+        return `
+          <tr data-turn-idx="${t.idx - 1}" style="border-block-end: 1px solid var(--border-subtle); background: ${isBreak ? 'rgb(244 63 94 / 0.08)' : 'transparent'}; cursor: pointer;">
+            <td style="padding: 0.42rem 0.65rem; color: var(--text-muted);">${t.idx}</td>
+            <td style="padding: 0.42rem 0.65rem; color: var(--text-secondary);">${esc(t.timeStr || '--')}</td>
+            <td style="padding: 0.42rem 0.65rem; color: var(--text-secondary);">${esc(t.model)}</td>
+            <td style="padding: 0.42rem 0.65rem; text-align: end; color: #67e8f9;">${fmtTok(t.rd)}</td>
+            <td style="padding: 0.42rem 0.65rem; text-align: end; color: ${isBreak ? '#fb7185' : 'var(--text-secondary)'}; font-weight: ${isBreak ? '700' : '400'};">${fmtTok(t.cr)}</td>
+            <td style="padding: 0.42rem 0.65rem; text-align: end; color: var(--text-secondary);">${fmtTok(t.out)}</td>
+            <td style="padding: 0.42rem 0.65rem; text-align: end; color: var(--text-muted);">${t.idx === 1 ? '-' : fmtDurationSec(t.gapSec)}</td>
+            <td style="padding: 0.42rem 0.65rem; text-align: end; color: var(--text-primary);">${fmtUSD(t.cost, 3)}</td>
+            <td style="padding: 0.42rem 0.65rem; color: ${isBreak ? '#fda4af' : 'var(--text-muted)'};">${esc(t.breakCause || (t.idx === 1 && t.cr > 25000 ? 'Initial session cache write' : '-'))}</td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('[data-turn-idx]').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const idx = Number(tr.dataset.turnIdx);
+          state.chartHoverIdx = idx;
+          renderTimelineChart(session, idx);
+          updateChartTooltip(session, idx);
+          document.getElementById('chart-stage')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      });
+
+      if (filteredTurns.length > slice.length) {
+        moreWrap.hidden = false;
+        moreBtn.textContent = `Show next ${Math.min(200, filteredTurns.length - slice.length)} turns (${filteredTurns.length - slice.length} remaining)`;
+      } else {
+        moreWrap.hidden = true;
+      }
+    }
+
+    function openSessionModal(sessionId) {
+      const s = state.sessions.find(x => x.sessionId === sessionId);
+      if (!s) return;
+
+      state.selectedSessionId = s.sessionId;
+      state.turnsFilterBreaksOnly = false;
+      state.turnsLogLimit = 120;
+      state.chartHoverIdx = -1;
+
+      document.getElementById('turns-filter-all').setAttribute('aria-pressed', 'true');
+      document.getElementById('turns-filter-breaks').setAttribute('aria-pressed', 'false');
+      document.getElementById('turns-disclosure').open = false;
+
+      document.getElementById('modal-badges-row').innerHTML = `
+        <span class="app-tag">${esc(s.appName)}</span>
+        <span class="badge badge-muted mono">${esc(s.shortId)}</span>
+        <span class="badge ${s.isWarm ? 'badge-cyan' : 'badge-muted'} mono">
+          ${s.isWarm ? `Warm 1h (${Math.ceil(s.ttlRemainingSec / 60)}m left)` : `Cold (${fmtRelativeAge(s.ageMin)})`}
+        </span>
+        <span class="badge ${s.cacheIntegrityPct >= 90 ? 'badge-emerald' : s.cacheIntegrityPct >= 75 ? 'badge-amber' : 'badge-crimson'} mono">
+          ${s.cacheIntegrityPct}% Integrity
+        </span>
+        <span class="badge badge-emerald mono">${fmtUSD(s.totalCost)}</span>
+      `;
+
+      document.getElementById('session-modal-title').textContent = s.title;
+      document.getElementById('modal-sub-row').innerHTML = `
+        <span>Context: <strong style="color: var(--text-primary);">${fmtTok(s.currentContext)}</strong></span>
+        <span>&middot;</span>
+        <span>Turns: <strong style="color: var(--text-primary);">${s.turnsCount}</strong></span>
+        <span>&middot;</span>
+        <span>Read: <strong style="color: #67e8f9;">${fmtTok(s.totalRead)}</strong></span>
+        <span>&middot;</span>
+        <span>Write: <strong style="color: var(--text-primary);">${fmtTok(s.totalCreated)}</strong></span>
+        <span>&middot;</span>
+        <span>Out: <strong style="color: var(--text-primary);">${fmtTok(s.totalOut)}</strong></span>
+        <span>&middot;</span>
+        <span>Read:Out Ratio: <strong style="color: var(--text-primary);">${s.readToOutRatio}:1</strong></span>
+      `;
+
+      document.getElementById('modal-decisions-list').innerHTML = (s.decisions || []).map(d => {
+        const cls = d.type === 'critical' ? 'badge-crimson' : d.type === 'warning' ? 'badge-amber' : d.type === 'info' ? 'badge-cyan' : 'badge-emerald';
+        return `
+          <div class="decision-row">
+            <span class="badge ${cls}">${esc(d.badge)}</span>
+            <span style="color: var(--text-secondary); flex: 1; min-inline-size: 220px;">${esc(d.reason)}</span>
+          </div>
+        `;
+      }).join('');
+
+      const breaks = s.turns
+        .map((t, idx) => ({ t, idx }))
+        .filter(({ t, idx }) => idx > 0 && t.cr > 25000);
+
+      const pillsEl = document.getElementById('modal-break-pills');
+      if (breaks.length === 0) {
+        pillsEl.innerHTML = `<span class="badge badge-emerald">0 mid-session cache breaks (&gt;25k write) across ${s.turnsCount} turns</span>`;
+      } else {
+        pillsEl.innerHTML = breaks.slice(0, 16).map(({ t, idx }) => `
+          <button type="button" class="break-jump-pill" data-jump-turn="${idx}">
+            <span>Turn #${t.idx}</span>
+            <span>+${fmtTok(t.cr)}</span>
+            <span style="opacity: 0.8;">(${t.gapSec >= 60 ? fmtDurationSec(t.gapSec) : esc((t.breakCause || '').split(' ')[0])})</span>
+          </button>
+        `).join('') + (breaks.length > 16 ? `<span class="badge badge-crimson mono">+${breaks.length - 16} more</span>` : '');
+
+        pillsEl.querySelectorAll('[data-jump-turn]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.jumpTurn);
+            state.chartHoverIdx = idx;
+            renderTimelineChart(s, idx);
+            updateChartTooltip(s, idx);
+          });
+        });
+      }
+
+      document.getElementById('turns-summary-label').textContent =
+        `Turn-by-Turn Telemetry (${s.turnsCount} turns, ${breaks.length} cache break${breaks.length === 1 ? '' : 's'})`;
+      renderModalTurnsTable(s);
+
+      const simMount = document.getElementById('modal-simulator-mount');
+      simMount.innerHTML = buildSimulatorMarkup('modal', getSessionTargetMeta(s));
+      bindSimulatorEvents(simMount, renderAllOpenSimulators);
+
+      const modal = document.getElementById('session-modal');
+      if (!modal.open) modal.showModal();
+
+      requestAnimationFrame(() => {
+        renderTimelineChart(s, breaks.length > 0 ? breaks[0].idx : -1);
+        if (breaks.length > 0) {
+          state.chartHoverIdx = breaks[0].idx;
+          updateChartTooltip(s, breaks[0].idx);
+        } else {
+          document.getElementById('chart-tooltip').hidden = true;
+        }
+      });
+    }
+
+    function openSimulatorDrawer(preferredSessionId = '') {
+      const select = document.getElementById('drawer-session-select');
+      const options = state.sessions.slice(0, 60).map(s =>
+        `<option value="${esc(s.sessionId)}">${esc(s.appName)} - ${esc(s.title.slice(0, 38))} (${fmtTok(s.currentContext)} / ${s.isWarm ? 'warm' : 'cold'})</option>`
+      );
+      options.push(`<option value="__custom__">Custom scenario (manual context &amp; model)</option>`);
+      select.innerHTML = options.join('');
+
+      if (preferredSessionId && state.sessions.some(x => x.sessionId === preferredSessionId)) {
+        state.sim.drawerTargetId = preferredSessionId;
+      } else if (!state.sim.drawerTargetId || (state.sim.drawerTargetId !== '__custom__' && !state.sessions.some(x => x.sessionId === state.sim.drawerTargetId))) {
+        const defaultTarget = state.sessions.find(x => x.currentContext >= 100000) || state.sessions[0];
+        state.sim.drawerTargetId = defaultTarget ? defaultTarget.sessionId : '__custom__';
+      }
+      select.value = state.sim.drawerTargetId;
+
+      const drawer = document.getElementById('sim-drawer');
+      if (!drawer.open) drawer.showModal();
+      renderAllOpenSimulators();
+    }
+
+    function refreshDashboardUI() {
+      const filtered = getFilteredSessions();
+      renderQuotaBanner();
+      renderKpis(filtered);
+      renderAppsStrip();
+      renderSessionsTable(filtered);
+      renderAllOpenSimulators();
+    }
+
+    async function fetchTelemetry({ force = false } = {}) {
+      const label = document.getElementById('last-scan-label');
+      if (label) label.textContent = 'Syncing...';
+      try {
+        const params = new URLSearchParams({
+          days: String(state.days),
+          refresh: force ? '1' : '0',
+        });
+        const res = await fetch(`/api/data?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (data.pricing) state.pricing = data.pricing;
+        state.sessions = data.sessions || [];
+        state.apps = data.apps || [];
+        state.activeBlock = data.activeBlock || { active: false };
+        state.scannedAt = data.scannedAt;
+
+        refreshDashboardUI();
+
+        if (state.selectedSessionId && document.getElementById('session-modal')?.open) {
+          const updated = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+          if (updated) {
+            renderTimelineChart(updated, state.chartHoverIdx);
+            renderModalTurnsTable(updated);
+          }
+        }
+
+        if (label) {
+          label.textContent = fmtLocalClock(state.scannedAt);
+        }
+      } catch (err) {
+        console.error('Failed to load telemetry:', err);
+        if (label) label.textContent = 'Offline';
+      }
+    }
+
+    function init() {
+      setupDialogs();
+      setupTimelineInteractions();
+
+      document.querySelectorAll('#days-pill-group [data-days]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.days = Number(btn.dataset.days);
+          document.querySelectorAll('#days-pill-group [data-days]').forEach(b => {
+            b.setAttribute('aria-pressed', String(b === btn));
+          });
+          fetchTelemetry({ force: true });
+        });
+      });
+
+      document.getElementById('app-select').addEventListener('change', e => {
+        state.appFilter = e.target.value;
+        refreshDashboardUI();
+      });
+
+      document.getElementById('session-search').addEventListener('input', e => {
+        state.searchQuery = e.target.value;
+        refreshDashboardUI();
+      });
+
+      document.querySelectorAll('#status-filter-group [data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.statusFilter = btn.dataset.filter;
+          document.querySelectorAll('#status-filter-group [data-filter]').forEach(b => {
+            b.setAttribute('aria-pressed', String(b === btn));
+          });
+          refreshDashboardUI();
+        });
+      });
+
+      document.getElementById('refresh-btn').addEventListener('click', () => {
+        fetchTelemetry({ force: true });
+        showToast('Usage data refreshed');
+      });
+
+      document.getElementById('open-sim-drawer-btn').addEventListener('click', () => {
+        openSimulatorDrawer(state.selectedSessionId || '');
+      });
+
+      document.getElementById('drawer-session-select').addEventListener('change', e => {
+        state.sim.drawerTargetId = e.target.value;
+        renderAllOpenSimulators();
+      });
+
+      const customCtxSlider = document.getElementById('custom-ctx-input');
+      syncSliderValue(customCtxSlider, 'tokens');
+      customCtxSlider.addEventListener('input', () => {
+        state.sim.customCtx = Number(customCtxSlider.value) || 180000;
+        document.getElementById('custom-ctx-lbl').textContent = fmtTok(state.sim.customCtx);
+        syncSliderValue(customCtxSlider, 'tokens');
+        renderAllOpenSimulators();
+      });
+
+      document.getElementById('custom-model-select').addEventListener('change', e => {
+        state.sim.customModel = e.target.value;
+        renderAllOpenSimulators();
+      });
+
+      document.getElementById('custom-warm-select').addEventListener('change', e => {
+        state.sim.customWarm = e.target.value === 'warm';
+        renderAllOpenSimulators();
+      });
+
+      document.getElementById('copy-resume-btn').addEventListener('click', () => {
+        if (!state.selectedSessionId) return;
+        copyText(`claude --resume ${state.selectedSessionId}`, 'Copied claude --resume command');
+      });
+
+      document.getElementById('turns-filter-all').addEventListener('click', () => {
+        state.turnsFilterBreaksOnly = false;
+        state.turnsLogLimit = 120;
+        document.getElementById('turns-filter-all').setAttribute('aria-pressed', 'true');
+        document.getElementById('turns-filter-breaks').setAttribute('aria-pressed', 'false');
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (s) renderModalTurnsTable(s);
+      });
+
+      document.getElementById('turns-filter-breaks').addEventListener('click', () => {
+        state.turnsFilterBreaksOnly = true;
+        state.turnsLogLimit = 120;
+        document.getElementById('turns-filter-all').setAttribute('aria-pressed', 'false');
+        document.getElementById('turns-filter-breaks').setAttribute('aria-pressed', 'true');
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (s) renderModalTurnsTable(s);
+      });
+
+      document.getElementById('turns-load-more-btn').addEventListener('click', () => {
+        state.turnsLogLimit += 200;
+        const s = state.sessions.find(x => x.sessionId === state.selectedSessionId);
+        if (s) renderModalTurnsTable(s);
+      });
+
+      document.addEventListener('keydown', e => {
+        const tag = document.activeElement?.tagName;
+        const inInput = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
+        const anyModalOpen = document.getElementById('session-modal')?.open || document.getElementById('sim-drawer')?.open;
+
+        if (!inInput && !anyModalOpen && e.key === '/') {
+          e.preventDefault();
+          document.getElementById('session-search')?.focus();
+        } else if (!inInput && !anyModalOpen && (e.key === 's' || e.key === 'S') && !e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          openSimulatorDrawer();
+        } else if (!inInput && !anyModalOpen && (e.key === 'r' || e.key === 'R') && !e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          fetchTelemetry({ force: true });
+          showToast('Usage data refreshed');
+        }
+      });
+
+      fetchTelemetry();
+
+      setInterval(() => {
+        if (state.activeBlock?.active) renderQuotaBanner();
+      }, 1000);
+
+      setInterval(() => {
+        if (!document.hidden) fetchTelemetry();
+      }, 30000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

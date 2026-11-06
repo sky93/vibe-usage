@@ -1,0 +1,37 @@
+{
+  "name": "vibe-usage",
+  "version": "1.0.0",
+  "description": "Local Claude Code session usage and KV-cache analyzer",
+  "type": "module",
+  "license": "MIT",
+  "author": "Sepehr Mohaghegh <sepehr.mohaghegh@hotmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sky93/vibe-usage.git"
+  },
+  "homepage": "https://github.com/sky93/vibe-usage#readme",
+  "bugs": {
+    "url": "https://github.com/sky93/vibe-usage/issues"
+  },
+  "bin": {
+    "vibe-usage": "./src/cli.mjs",
+    "ccdash": "./src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "public"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node ./src/cli.mjs",
+    "table": "node ./src/cli.mjs --table"
+  },
+  "keywords": [
+    "claude-code",
+    "usage",
+    "cache",
+    "cli"
+  ]
+}
